@@ -23,14 +23,16 @@ class QuizCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(16),
-      elevation: 4,
+      elevation: 6,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Question counter
+            // Question counters
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -38,36 +40,37 @@ class QuizCard extends StatelessWidget {
                   'Question $questionNumber/$totalQuestions',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey,
+                    color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: Colors.green[600],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     question.difficulty,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.green,
+                      color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
             // Question text
             Text(
               question.question,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
                 height: 1.5,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 24),
@@ -78,6 +81,32 @@ class QuizCard extends StatelessWidget {
               String option = entry.value;
               bool isSelected = selectedAnswer == index;
               bool isCorrect = index == question.correctAnswer;
+              bool isWrong = isAnswered && isSelected && !isCorrect;
+
+              // Color logic
+              Color bgColor;
+              Color borderColor;
+              Color textColor = Colors.black87;
+
+              if (isAnswered) {
+                if (isCorrect) {
+                  bgColor = Colors.green[50]!;
+                  borderColor = Colors.green[600]!;
+                } else if (isWrong) {
+                  bgColor = Colors.red[50]!;
+                  borderColor = Colors.red[400]!;
+                  textColor = Colors.red[800]!;
+                } else {
+                  bgColor = Colors.white;
+                  borderColor = Colors.grey[300]!;
+                }
+              } else if (isSelected) {
+                bgColor = Colors.blue[50]!;
+                borderColor = Colors.blue[600]!;
+              } else {
+                bgColor = Colors.white;
+                borderColor = Colors.grey[300]!;
+              }
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -86,16 +115,9 @@ class QuizCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.green
-                            : (isAnswered && isCorrect ? Colors.green : Colors.grey!),
-                        width: isSelected ? 2 : 1,
-                      ),
+                      color: bgColor,
+                      border: Border.all(color: borderColor, width: 2),
                       borderRadius: BorderRadius.circular(8),
-                      color: isSelected
-                          ? Colors.green
-                          : (isAnswered && isCorrect ? Colors.green : Colors.white),
                     ),
                     child: Row(
                       children: [
@@ -105,29 +127,58 @@ class QuizCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? Colors.green : Colors.grey!,
+                              color: isSelected
+                                  ? (isAnswered
+                                  ? (isCorrect
+                                  ? Colors.green
+                                  : Colors.red)
+                                  : Colors.blue)
+                                  : Colors.grey[400]!,
                               width: 2,
                             ),
+                            color: isSelected
+                                ? (isAnswered
+                                ? (isCorrect
+                                ? Colors.green[100]
+                                : Colors.red[100])
+                                : Colors.blue[100])
+                                : Colors.white,
                           ),
                           child: isSelected
-                              ? const Center(
-                                  child: Icon(Icons.check, size: 14, color: Colors.green),
-                                )
+                              ? Center(
+                            child: Icon(
+                              isAnswered
+                                  ? (isCorrect
+                                  ? Icons.check
+                                  : Icons.close)
+                                  : Icons.check,
+                              size: 14,
+                              color: isAnswered
+                                  ? (isCorrect
+                                  ? Colors.green
+                                  : Colors.red)
+                                  : Colors.blue,
+                            ),
+                          )
                               : null,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Text(
                             option,
                             style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                              color: Colors.black87,
+                              fontSize: 15,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: textColor,
                             ),
                           ),
                         ),
                         if (isAnswered && isCorrect)
                           const Icon(Icons.check_circle, color: Colors.green),
+                        if (isWrong)
+                          const Icon(Icons.cancel, color: Colors.red),
                       ],
                     ),
                   ),
@@ -140,9 +191,9 @@ class QuizCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue!),
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue[200]!),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,6 +203,7 @@ class QuizCard extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -159,7 +211,7 @@ class QuizCard extends StatelessWidget {
                       question.explanation,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey,
+                        color: Colors.grey[900],
                         height: 1.5,
                       ),
                     ),

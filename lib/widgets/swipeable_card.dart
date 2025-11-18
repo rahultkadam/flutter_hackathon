@@ -28,7 +28,7 @@ class _SwipeableCardState extends State<SwipeableCard>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 350),
     );
   }
 
@@ -47,7 +47,6 @@ class _SwipeableCardState extends State<SwipeableCard>
 
   void _onDragEnd(DragEndDetails details) {
     final velocity = details.velocity.pixelsPerSecond.dx;
-    // REDUCED threshold for easier swiping
     final isPastThreshold = _offset.dx.abs() > 60 || velocity.abs() > 500;
 
     if (isPastThreshold) {
@@ -60,7 +59,7 @@ class _SwipeableCardState extends State<SwipeableCard>
   void _animateCard(bool isRight) {
     final animation = Tween<Offset>(
       begin: _offset,
-      end: Offset(isRight ? 1500 : -1500, 1000),
+      end: Offset(isRight ? 1500 : -1500, 800),
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
 
     animation.addListener(() {
@@ -72,6 +71,7 @@ class _SwipeableCardState extends State<SwipeableCard>
     _animationController.forward().then((_) {
       widget.onSwipe(isRight);
       _reset();
+      widget.onCardEnd();
     });
   }
 
@@ -102,6 +102,7 @@ class _SwipeableCardState extends State<SwipeableCard>
     final opacity = (1 - (_offset.dx.abs() / 500).clamp(0, 1)).toDouble();
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onHorizontalDragUpdate: _onDragUpdate,
       onHorizontalDragEnd: _onDragEnd,
       child: Transform.translate(
@@ -112,11 +113,10 @@ class _SwipeableCardState extends State<SwipeableCard>
             opacity: opacity,
             child: Card(
               margin: const EdgeInsets.all(24),
-              elevation: 8,
+              elevation: 10,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              // FIXED COLORS for better visibility
               color: Colors.white,
               child: Container(
                 decoration: BoxDecoration(
@@ -126,45 +126,40 @@ class _SwipeableCardState extends State<SwipeableCard>
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      Colors.green!,
+                      Colors.green[50]!,
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.green!,
+                    color: Colors.green[300]!,
                     width: 2,
                   ),
                 ),
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       widget.statement.emoji,
                       style: const TextStyle(fontSize: 64),
                     ),
                     const SizedBox(height: 32),
-                    // FIXED TEXT COLOR for visibility
                     Text(
                       widget.statement.statement,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         height: 1.4,
-                        color: Colors.black87, // Dark text for readability
+                        color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 48),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.grey!),
+                        border: Border.all(color: Colors.grey[300]!),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -172,39 +167,25 @@ class _SwipeableCardState extends State<SwipeableCard>
                         children: [
                           Column(
                             children: [
-                              Icon(
-                                Icons.arrow_back,
-                                size: 28,
-                                color: Colors.red,
-                              ),
+                              Icon(Icons.arrow_back, size: 28, color: Colors.red[600]),
                               const SizedBox(height: 4),
-                              Text(
-                                'MYTH',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
-                              ),
+                              Text('MYTH',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red[600])),
                             ],
                           ),
                           const SizedBox(width: 60),
                           Column(
                             children: [
-                              Icon(
-                                Icons.arrow_forward,
-                                size: 28,
-                                color: Colors.green,
-                              ),
+                              Icon(Icons.arrow_forward, size: 28, color: Colors.green[600]),
                               const SizedBox(height: 4),
-                              Text(
-                                'FACT',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
+                              Text('FACT',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green[600])),
                             ],
                           ),
                         ],

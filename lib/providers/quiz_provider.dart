@@ -175,4 +175,10 @@ class QuizProvider extends ChangeNotifier {
     _isQuizStarted = false;
     notifyListeners();
   }
+
+  void preloadQuiz(List<QuizQuestion> quiz) {
+    _currentQuiz = quiz;
+    notifyListeners();
+  }
+
 }

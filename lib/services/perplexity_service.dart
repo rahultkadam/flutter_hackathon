@@ -8,7 +8,7 @@ class PerplexityService {
   static const String _baseUrl = 'https://api.perplexity.ai/chat/completions';
 
   // ⚠️ IMPORTANT: Replace with your API key from https://www.perplexity.ai/settings/api
-  static const String _apiKey = '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';
+  static const String _apiKey = 'api-key';
 
   Future<String> getChatResponse(
   String userMessage,
@@ -31,7 +31,7 @@ class PerplexityService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'model': 'sonar-pro',
+            'model': 'sonar',
             'messages': [
               {'role': 'system', 'content': systemPrompt},
               {'role': 'user', 'content': userMessage}
@@ -100,7 +100,6 @@ Response Format:
 Remember: You are teaching financial literacy, not trading strategies.''';
   }
 
-  // NEW: Generate quiz questions from API
   Future<List<QuizQuestion>> generateQuizQuestions(
       UserProfile profile,
       String difficulty,
@@ -109,7 +108,7 @@ Remember: You are teaching financial literacy, not trading strategies.''';
     try {
       final prompt = '''
 Generate exactly $count multiple-choice financial quiz questions for a ${profile.age}-year-old ${profile.gender} with income ${profile.incomeRange}.
-
+User is from India. 
 Difficulty: $difficulty
 
 Format as JSON array with this structure:
@@ -120,9 +119,6 @@ Format as JSON array with this structure:
   "explanation": "detailed explanation",
   "category": "category name"
 }]
-
-Topics: SIP, Mutual Funds, Tax Saving, Insurance, Retirement Planning
-Make questions relevant to their age and income level.
 Return ONLY the JSON array, no other text.
 ''';
 
@@ -133,18 +129,17 @@ Return ONLY the JSON array, no other text.
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'model': 'sonar-pro',
-          'messages': [
-            {'role': 'user', 'content': prompt}
-          ],
+          'model': 'sonar',
+          'messages': [{'role': 'user', 'content': prompt}],
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final content = data['choices']['message']['content'];
+        // >>> FIX: Use correct path for content
+        final content = data['choices'][0]['message']['content'];
 
-        // Extract JSON from response
+        // Extract JSON array from string
         final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(content);
         if (jsonMatch != null) {
           final jsonStr = jsonMatch.group(0)!;
@@ -156,7 +151,9 @@ Return ONLY the JSON array, no other text.
               id: entry.key + 1,
               question: q['question'] as String,
               options: List<String>.from(q['options']),
-              correctAnswer: q['correctAnswer'] as int,
+              correctAnswer: q['correctAnswer'] is int
+                  ? q['correctAnswer'] as int
+                  : int.tryParse(q['correctAnswer'].toString()) ?? 0,
               explanation: q['explanation'] as String,
               category: q['category'] as String,
               difficulty: difficulty,
@@ -164,8 +161,6 @@ Return ONLY the JSON array, no other text.
           }).toList();
         }
       }
-
-      // Fallback to default questions if API fails
       return _getFallbackQuizQuestions(difficulty, count);
     } catch (e) {
       print('Error generating quiz: $e');
@@ -173,7 +168,6 @@ Return ONLY the JSON array, no other text.
     }
   }
 
-  // NEW: Generate myth vs fact statements from API
   Future<List<MythFactStatement>> generateMythFactStatements(
       UserProfile profile,
       int count,
@@ -181,7 +175,7 @@ Return ONLY the JSON array, no other text.
     try {
       final prompt = '''
 Generate exactly $count financial myth or fact statements for a ${profile.age}-year-old with income ${profile.incomeRange}.
-
+User is from India.
 Format as JSON array:
 [{
   "statement": "statement text",
@@ -190,9 +184,6 @@ Format as JSON array:
   "category": "category name",
   "emoji": "relevant emoji"
 }]
-
-Mix of myths and facts about: Investing, SIP, Mutual Funds, Tax Saving, Insurance, Banking
-Make relevant to their profile.
 Return ONLY the JSON array, no other text.
 ''';
 
@@ -203,17 +194,14 @@ Return ONLY the JSON array, no other text.
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'model': 'sonar-pro',
-          'messages': [
-            {'role': 'user', 'content': prompt}
-          ],
+          'model': 'sonar',
+          'messages': [{'role': 'user', 'content': prompt}],
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final content = data['choices']['message']['content'];
-
+        final content = data['choices'][0]['message']['content'];
         final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(content);
         if (jsonMatch != null) {
           final jsonStr = jsonMatch.group(0)!;
@@ -240,20 +228,13 @@ Return ONLY the JSON array, no other text.
     }
   }
 
-  // NEW: Generate quick suggestions from API
   Future<List<String>> generateQuickSuggestions(UserProfile profile) async {
     try {
       final prompt = '''
-Generate 4 short, personalized financial question suggestions for a ${profile.age}-year-old ${profile.gender} with income ${profile.incomeRange}.
-
+Generate 4 short - (max 5 words), personalized financial question suggestions for a ${profile.age}-year-old ${profile.gender} with income ${profile.incomeRange}.
+User is from India.
 Format as JSON array of strings:
 ["Question 1?", "Question 2?", "Question 3?", "Question 4?"]
-
-Make questions:
-- Relevant to their age and income
-- Actionable and specific
-- About investment, tax, SIP, insurance, or retirement
-- Maximum 60 characters each
 
 Return ONLY the JSON array, no other text.
 ''';
@@ -265,17 +246,13 @@ Return ONLY the JSON array, no other text.
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'model': 'sonar-pro',
-          'messages': [
-            {'role': 'user', 'content': prompt}
-          ],
+          'model': 'sonar',
+          'messages': [{'role': 'user', 'content': prompt}],
         }),
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final content = data['choices']['message']['content'];
-
+        final content = data['choices'][0]['message']['content'];
         final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(content);
         if (jsonMatch != null) {
           final jsonStr = jsonMatch.group(0)!;
@@ -288,7 +265,6 @@ Return ONLY the JSON array, no other text.
       print('Error generating suggestions: $e');
       return _getFallbackSuggestions();
     }
-
   }
 
   // Fallback methods

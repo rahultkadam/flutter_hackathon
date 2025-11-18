@@ -16,61 +16,40 @@ class QuickSuggestions extends StatefulWidget {
 }
 
 class _QuickSuggestionsState extends State<QuickSuggestions> {
-  List<String> _suggestions = [];
-  bool _isLoading = true;
+  List<String> _suggestions = [
+    // Generic fallback first (fast display); will update after API fetch!
+    'Best investment for my age?',
+    'How to save tax?',
+    'Emergency fund calculation',
+    'Explain SIP in 30 seconds'
+  ];
 
   @override
-  void initState() {
-    super.initState();
-    _loadSuggestions();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Start API fetch in the background, no loader shown
+    _maybeLoadSuggestions();
   }
 
-  Future<void> _loadSuggestions() async {
+  void _maybeLoadSuggestions() async {
     final chatProvider = context.read<ChatProvider>();
     final profile = chatProvider.userProfile;
-
     if (profile != null) {
       try {
-        final suggestions = await PerplexityService().generateQuickSuggestions(profile);
-        setState(() {
-          _suggestions = suggestions;
-          _isLoading = false;
-        });
+        final apiSuggestions = await PerplexityService().generateQuickSuggestions(profile);
+        if (mounted) {
+          setState(() {
+            _suggestions = apiSuggestions;
+          });
+        }
       } catch (e) {
-        setState(() {
-          _suggestions = [
-            'Best investment for my age?',
-            'How to save tax?',
-            'Emergency fund calculation',
-            'Explain SIP in 30 seconds',
-          ];
-          _isLoading = false;
-        });
+        // Ignore, fallback suggestions already shown.
       }
-    } else {
-      setState(() {
-        _suggestions = [
-          'Best investment for my age?',
-          'How to save tax?',
-          'Emergency fund calculation',
-          'Explain SIP in 30 seconds',
-        ];
-        _isLoading = false;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -92,22 +71,21 @@ class _QuickSuggestionsState extends State<QuickSuggestions> {
               return GestureDetector(
                 onTap: () => widget.onSuggestionTap(suggestion),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 180), // prevent overflow on wide texts
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.green,
-                    border: Border.all(color: Colors.green!),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.green[600],
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
                     suggestion,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.green,
-                      fontWeight: FontWeight.w500,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,   // White text for best contrast
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               );

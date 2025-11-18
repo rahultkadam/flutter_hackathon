@@ -23,7 +23,7 @@ class MythFactProvider extends ChangeNotifier {
   List<MythFactStatement> get currentStatements => _currentStatements;
   int get currentStatementIndex => _currentStatementIndex;
   MythFactStatement? get currentStatement =>
-      _currentStatementIndex < _currentStatements.length
+      (_currentStatementIndex < _currentStatements.length)
           ? _currentStatements[_currentStatementIndex]
           : null;
 
@@ -46,24 +46,22 @@ class MythFactProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch statements from API
       _currentStatements = await _perplexityService.generateMythFactStatements(
         _userProfile!,
-        20, // 20 statements
+        20,
       );
 
       _currentStatementIndex = 0;
       _correctAnswers = 0;
       _userAnswers = [];
       _isGameActive = true;
-
-      await _loadGameData();
     } catch (e) {
       print('Error starting game: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      _currentStatements = []; // reset to empty if failure
+      _isGameActive = false;
     }
+    _isLoading = false;
+    notifyListeners();
   }
 
   bool isAnswerCorrect(MythFactStatement statement, bool userSwipedRight) {
@@ -85,22 +83,13 @@ class MythFactProvider extends ChangeNotifier {
       _streak = 0;
     }
 
+    // Advance index and notify UI properly
     if (_currentStatementIndex < _currentStatements.length - 1) {
       _currentStatementIndex++;
+      notifyListeners();
     } else {
       endGame();
     }
-
-    notifyListeners();
-  }
-
-  void skipStatement() {
-    if (_currentStatementIndex < _currentStatements.length - 1) {
-      _currentStatementIndex++;
-    } else {
-      endGame();
-    }
-    notifyListeners();
   }
 
   Future<void> endGame() async {
@@ -123,7 +112,8 @@ class MythFactProvider extends ChangeNotifier {
   Future<void> _saveGameData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final resultsJson = _gameResults.map((r) => jsonEncode(r.toJson())).toList();
+    final resultsJson =
+    _gameResults.map((r) => jsonEncode(r.toJson())).toList();
     await prefs.setStringList('mythfact_results', resultsJson);
     await prefs.setInt('mythfact_max_streak', _maxStreak);
   }
@@ -132,7 +122,9 @@ class MythFactProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     final resultsJson = prefs.getStringList('mythfact_results') ?? [];
-    _gameResults = resultsJson.map((r) => MythFactGameResult.fromJson(jsonDecode(r))).toList();
+    _gameResults = resultsJson
+        .map((r) => MythFactGameResult.fromJson(jsonDecode(r)))
+        .toList();
     _maxStreak = prefs.getInt('mythfact_max_streak') ?? 0;
   }
 

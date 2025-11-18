@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/user_profile.dart';
 import '../services/storage_service.dart';
 import '../providers/chat_provider.dart';
+import '../services/perplexity_service.dart';
+import '../providers/quiz_provider.dart';
+import '../providers/myth_fact_provider.dart';
 import 'main_navigation_screen.dart';
 
 class ProfileInputScreen extends StatefulWidget {
@@ -191,6 +194,22 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
 
       await StorageService().saveUserProfile(profile);
       context.read<ChatProvider>().setUserProfile(profile);
+
+      await StorageService().saveUserProfile(profile);
+      context.read<ChatProvider>().setUserProfile(profile);
+      context.read<QuizProvider>().setUserProfile(profile);
+      context.read<MythFactProvider>().setUserProfile(profile);
+
+      // Prefetch all AI-powered content in background
+      PerplexityService().generateQuickSuggestions(profile).then((suggestions) {
+        // Optionally set suggestions in a provider/state.
+      });
+      PerplexityService().generateQuizQuestions(profile, 'Beginner', 5).then((quiz) {
+        context.read<QuizProvider>().preloadQuiz(quiz);
+      });
+      /*PerplexityService().generateMythFactStatements(profile, 20).then((myths) {
+        context.read<MythFactProvider>().preloadMyths(myths);
+      });*/
 
       if (mounted) {
         Navigator.pushReplacement(
