@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
-
 import '../providers/myth_fact_provider.dart';
 import '../widgets/swipeable_card.dart';
 
@@ -49,7 +47,10 @@ class _MythFactScreenState extends State<MythFactScreen> {
                 SizedBox(height: 16),
                 Text(
                   'Myth vs Fact',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
                 ),
                 SizedBox(height: 8),
                 Text(
@@ -77,8 +78,10 @@ class _MythFactScreenState extends State<MythFactScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _statItem('🔥 Max Streak', '${mythFactProvider.maxStreak}', 'correct'),
-                      _statItem('🎮 Games', '${mythFactProvider.gameResults.length}', 'played'),
+                      _statItem('🔥 Max Streak', '${mythFactProvider.maxStreak}',
+                          'correct'),
+                      _statItem('🎮 Games',
+                          '${mythFactProvider.gameResults.length}', 'played'),
                       _statItem(
                         '🎯 Best',
                         mythFactProvider.gameResults.isNotEmpty
@@ -96,22 +99,29 @@ class _MythFactScreenState extends State<MythFactScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: Colors.blue,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue[200]!),
+              border: Border.all(color: Colors.blue!),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
                   '📖 How to Play',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue),
                 ),
                 SizedBox(height: 12),
-                Text('• Swipe RIGHT if you think it\'s a FACT', style: TextStyle(fontSize: 12)),
-                Text('• Swipe LEFT if you think it\'s a MYTH', style: TextStyle(fontSize: 12)),
-                Text('• Learn the explanation after each card', style: TextStyle(fontSize: 12)),
-                Text('• Build your streak with correct answers', style: TextStyle(fontSize: 12)),
+                Text('• Swipe RIGHT if you think it\'s a FACT',
+                    style: TextStyle(fontSize: 12)),
+                Text('• Swipe LEFT if you think it\'s a MYTH',
+                    style: TextStyle(fontSize: 12)),
+                Text('• Learn the explanation after each card',
+                    style: TextStyle(fontSize: 12)),
+                Text('• Build your streak with correct answers',
+                    style: TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -131,16 +141,19 @@ class _MythFactScreenState extends State<MythFactScreen> {
                   ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
               )
                   : const Icon(Icons.play_arrow),
               label: Text(
-                mythFactProvider.isLoading ? 'Generating Statements...' : 'Start Game',
+                mythFactProvider.isLoading
+                    ? 'Generating Statements...'
+                    : 'Start Game',
                 style: const TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green[600],
+                backgroundColor: Colors.green,
               ),
             ),
           ),
@@ -163,29 +176,38 @@ class _MythFactScreenState extends State<MythFactScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('${mythFactProvider.totalAnswered}/${mythFactProvider.currentStatements.length}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                      '${mythFactProvider.totalAnswered}/${mythFactProvider.currentStatements.length}',
+                      style:
+                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text(
                     'Streak: ${mythFactProvider.streak} 🔥',
-                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: (mythFactProvider.totalAnswered + 1) / mythFactProvider.currentStatements.length,
-                color: Colors.green[600],
-                backgroundColor: Colors.grey[300],
+                value: (mythFactProvider.totalAnswered + 1) /
+                    mythFactProvider.currentStatements.length,
+                color: Colors.green,
+                backgroundColor: Colors.grey,
                 minHeight: 8,
               ),
             ],
           ),
         ),
         Expanded(
+          // FIX #7: Add unique key to force widget rebuild
           child: SwipeableCard(
+            key: ValueKey(currentStatement.id), // CRITICAL: Unique key
             statement: currentStatement,
             onSwipe: (swipedRight) {
-              final isCorrect = mythFactProvider.isAnswerCorrect(currentStatement, swipedRight);
+              final isCorrect =
+              mythFactProvider.isAnswerCorrect(currentStatement, swipedRight);
               mythFactProvider.processAnswer(isCorrect);
               if (mythFactProvider.currentStatement != null) {
                 setState(() {
@@ -202,9 +224,9 @@ class _MythFactScreenState extends State<MythFactScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: Colors.blue,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue[200]!),
+                border: Border.all(color: Colors.blue!),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,14 +235,17 @@ class _MythFactScreenState extends State<MythFactScreen> {
                     'This is a ${currentStatement.isFact ? 'FACT ✓' : 'MYTH ✗'}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: currentStatement.isFact ? Colors.green[700] : Colors.red[700],
+                      color: currentStatement.isFact
+                          ? Colors.green
+                          : Colors.red,
                       fontSize: 16,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     currentStatement.explanation,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+                    style: const TextStyle(
+                        fontSize: 14, color: Colors.black87, height: 1.4),
                   ),
                 ],
               ),
@@ -239,7 +264,7 @@ class _MythFactScreenState extends State<MythFactScreen> {
                 },
                 child: const Text('Show Explanation'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[600],
+                  backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
@@ -254,7 +279,8 @@ class _MythFactScreenState extends State<MythFactScreen> {
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(value,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         Text(unit, style: const TextStyle(fontSize: 11, color: Colors.grey)),
       ],
     );

@@ -3,14 +3,14 @@ class ChatSession {
   final DateTime createdAt;
   final String title;
   final List<ChatMessage> messages;
-  
+
   ChatSession({
     required this.id,
     required this.createdAt,
     required this.title,
     required this.messages,
   });
-  
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'createdAt': createdAt.toIso8601String(),
@@ -26,7 +26,7 @@ class ChatMessage {
   final DateTime timestamp;
   final bool isFavorite;
   final List<String>? suggestedFollowUps;
-  
+
   ChatMessage({
     required this.id,
     required this.content,
@@ -35,7 +35,7 @@ class ChatMessage {
     this.isFavorite = false,
     this.suggestedFollowUps,
   });
-  
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'content': content,
@@ -44,7 +44,7 @@ class ChatMessage {
     'isFavorite': isFavorite,
     'suggestedFollowUps': suggestedFollowUps,
   };
-  
+
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
     id: json['id'] as String,
     content: json['content'] as String,
@@ -59,7 +59,7 @@ class QuickSuggestion {
   final String title;
   final String query;
   final String emoji;
-  
+
   QuickSuggestion({
     required this.title,
     required this.query,

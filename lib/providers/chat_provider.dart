@@ -35,6 +35,7 @@ class ChatProvider extends ChangeNotifier {
       isUser: true,
       timestamp: DateTime.now(),
     ));
+
     _isLoading = true;
     notifyListeners();
 
@@ -45,7 +46,7 @@ class ChatProvider extends ChangeNotifier {
         _userProfile!,
       );
 
-      // Generate follow-up suggestions
+      // FIX #5: Generate follow-up suggestions dynamically
       final followUps = _generateFollowUpSuggestions(response);
 
       // Add AI message with follow-ups
@@ -103,11 +104,8 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // CHANGE 2: Update follow-up generation for dynamic suggestions
-// In chat_provider.dart, replace _generateFollowUpSuggestions method:
-
+  // FIX #5: Dynamic follow-up generation based on response content
   List<String> _generateFollowUpSuggestions(String response) {
-    // Generate contextual follow-up questions based on response content
     final followUps = <String>[];
     final lowerResponse = response.toLowerCase();
 
@@ -132,7 +130,7 @@ class ChatProvider extends ChangeNotifier {
       followUps.add('How much emergency fund do I need?');
     }
 
-    if (lowerResponse.contains('emergency') || lowerResponse.contains('fund')) {
+    if (lowerResponse.contains('emergency')) {
       followUps.add('In which account should I keep the emergency fund?');
       followUps.add('How is the emergency fund different from savings?');
     }
@@ -161,7 +159,7 @@ class ChatProvider extends ChangeNotifier {
       ]);
     }
 
-    // Return top 2 suggestions (can be adjusted)
+    // Return top 2 suggestions
     return followUps.take(2).toList();
   }
 }

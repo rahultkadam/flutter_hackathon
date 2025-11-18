@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/typing_indicator.dart';
@@ -24,7 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late SpeechToTextService _speechToTextService;
   late TextToSpeechService _textToSpeechService;
   bool _isMicActive = false;
-  String _micButtonLabel = 'Tap to speak';
+  String _micButtonLabel = 'Hold to speak';
 
   @override
   void initState() {
@@ -48,6 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // FIX #1: Hold to speak, release to stop - DON'T auto-send
   void _startListening() async {
     if (!_isMicActive) {
       try {
@@ -55,8 +55,6 @@ class _ChatScreenState extends State<ChatScreen> {
           _isMicActive = true;
           _micButtonLabel = 'Listening...';
         });
-
-        // Start listening - will continue until stopped
         await _speechToTextService.startListening();
       } catch (e) {
         print('Error starting: $e');
@@ -68,7 +66,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // CHANGE 1: In _startListening() - DON'T auto-send
   Future<void> _stopListening() async {
     if (!_isMicActive) return;
 
@@ -82,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       if (recognizedWords.isNotEmpty) {
-        // Write to message controller - DON'T auto-send
+        // FIX #1: Write to message controller - DON'T auto-send
         _messageController.text = recognizedWords;
 
         // Show feedback
@@ -108,6 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (message.isNotEmpty) {
       context.read<ChatProvider>().sendMessage(message);
       _messageController.clear();
+      setState(() {}); // Trigger rebuild to update send/mic button
 
       Future.delayed(const Duration(milliseconds: 300), () {
         if (_scrollController.hasClients) {
@@ -180,6 +178,39 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: _showProfileDialog,
             tooltip: 'Profile',
           ),
+          // FIX #2: Clear chat moved to app bar
+          Consumer<ChatProvider>(
+            builder: (context, chatProvider, child) {
+              if (chatProvider.messages.isEmpty) return const SizedBox();
+              return IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Clear Chat?'),
+                      content: const Text('This will delete all messages.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            chatProvider.clearChat();
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Clear',
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                tooltip: 'Clear chat',
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -214,7 +245,6 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, chatProvider, child) {
           return Column(
             children: [
-              // Quick suggestions at top
               if (chatProvider.messages.isEmpty)
                 QuickSuggestions(
                   onSuggestionTap: (query) {
@@ -222,107 +252,93 @@ class _ChatScreenState extends State<ChatScreen> {
                     _sendMessage();
                   },
                 ),
-
-              // Messages list
               Expanded(
                 child: chatProvider.messages.isEmpty
                     ? _buildWelcomeMessage()
                     : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: chatProvider.messages.length +
-                            (chatProvider.isLoading ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (chatProvider.isLoading &&
-                              index == chatProvider.messages.length) {
-                            return const TypingIndicator();
-                          }
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: chatProvider.messages.length +
+                      (chatProvider.isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (chatProvider.isLoading &&
+                        index == chatProvider.messages.length) {
+                      return const TypingIndicator();
+                    }
 
-                          final message = chatProvider.messages[index];
-                          return Column(
-                            children: [
-                              ChatBubble(message: message),
-                              if (!message.isUser)
-                                ResponseActions(
-                                  responseText: message.content,
-                                  isFavorite: message.isFavorite,
-                                  onBookmark: () {
-                                    chatProvider.toggleFavorite(message);
-                                  },
-                                  onSuggestFollowUp: () {
-                                    if (message.suggestedFollowUps != null &&
-                                        message.suggestedFollowUps!.isNotEmpty) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text(
-                                              'Suggested Follow-ups'),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: message.suggestedFollowUps!
-                                                .map(
-                                                  (question) =>
-                                                      GestureDetector(
-                                                    onTap: () {
-                                                      Navigator.pop(context);
-                                                      _messageController.text =
-                                                          question;
-                                                      _sendMessage();
-                                                    },
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8),
-                                                      child: Container(
-                                                        width:
-                                                            double.infinity,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors
-                                                              .green,
-                                                          border: Border.all(
-                                                            color: Colors
-                                                                .green!,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(8),
-                                                        ),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8),
-                                                        child: Text(
-                                                          '• $question',
-                                                          style: const TextStyle(
-                                                              fontSize: 12),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
-                                                .toList(),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: const Text('Close'),
+                    final message = chatProvider.messages[index];
+                    return Column(
+                      children: [
+                        ChatBubble(message: message),
+                        if (!message.isUser)
+                          ResponseActions(
+                            responseText: message.content,
+                            isFavorite: message.isFavorite,
+                            onBookmark: () {
+                              chatProvider.toggleFavorite(message);
+                            },
+                            onSuggestFollowUp: () {
+                              if (message.suggestedFollowUps != null &&
+                                  message.suggestedFollowUps!.isNotEmpty) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Suggested Follow-ups'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: message.suggestedFollowUps!
+                                          .map(
+                                            (question) => GestureDetector(
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _messageController.text =
+                                                question;
+                                            _sendMessage();
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Container(
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                border: Border.all(
+                                                  color: Colors.green!,
+                                                ),
+                                                borderRadius:
+                                                BorderRadius.circular(8),
+                                              ),
+                                              padding:
+                                              const EdgeInsets.all(8),
+                                              child: Text(
+                                                '• $question',
+                                                style: const TextStyle(
+                                                    fontSize: 12),
+                                              ),
                                             ),
-                                          ],
+                                          ),
                                         ),
-                                      );
-                                    }
-                                  },
-                                ),
-                            ],
-                          );
-                        },
-                      ),
+                                      )
+                                          .toList(),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context),
+                                        child: const Text('Close'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
-
-              // Input area
               _buildInputArea(chatProvider),
             ],
           );
@@ -359,7 +375,7 @@ class _ChatScreenState extends State<ChatScreen> {
             _buildWelcomeItem('🎯 Personalized advice'),
             const SizedBox(height: 32),
             const Text(
-              'Use the buttons below to type or speak! 👇',
+              'Use the button below to type or hold mic to speak! 👇',
               style: TextStyle(fontSize: 13, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
@@ -379,10 +395,10 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // Update the input button to use GestureDetector with onLongPress
+  // FIX #1: WhatsApp-style send/mic button
   Widget _buildInputArea(ChatProvider chatProvider) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -393,134 +409,77 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Text input and send button
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _messageController,
-                  decoration: InputDecoration(
-                    hintText: 'Ask me anything...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  maxLines: null,
-                  minLines: 1,
-                  enabled: !chatProvider.isLoading,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _sendMessage(),
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                hintText: 'Ask me anything...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: Colors.grey!),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
               ),
-              const SizedBox(width: 8),
-              FloatingActionButton(
-                mini: true,
-                onPressed: chatProvider.isLoading ? null : _sendMessage,
-                backgroundColor: Colors.green,
-                child: const Icon(Icons.send, size: 18),
-              ),
-            ],
+              maxLines: null,
+              minLines: 1,
+              enabled: !chatProvider.isLoading,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
+              onChanged: (_) => setState(() {}), // Rebuild to show send/mic button
+            ),
           ),
-          const SizedBox(height: 12),
-          // Voice button with HOLD-TO-SPEAK
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onLongPressStart: (_) => _startListening(),
-                onLongPressEnd: (_) => _stopListening(),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _isMicActive ? Colors.red : Colors.blue,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: _isMicActive
-                            ? Colors.red.withOpacity(0.4)
-                            : Colors.blue.withOpacity(0.4),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    _isMicActive ? Icons.mic : Icons.mic_none,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _micButtonLabel,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _isMicActive ? Colors.red : Colors.blue,
-                      ),
+          const SizedBox(width: 8),
+          // Combined Send/Mic Button
+          ValueListenableBuilder(
+            valueListenable: _messageController,
+            builder: (context, value, child) {
+              final hasText = value.text.trim().isNotEmpty;
+
+              if (hasText) {
+                // Show send button
+                return FloatingActionButton(
+                  mini: true,
+                  onPressed: chatProvider.isLoading ? null : _sendMessage,
+                  backgroundColor: Colors.green,
+                  child: const Icon(Icons.send, size: 20, color: Colors.white),
+                );
+              } else {
+                // Show mic button (hold to speak)
+                return GestureDetector(
+                  onLongPressStart: (_) => _startListening(),
+                  onLongPressEnd: (_) => _stopListening(),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _isMicActive ? Colors.red : Colors.blue,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _isMicActive
+                              ? Colors.red.withOpacity(0.4)
+                              : Colors.blue.withOpacity(0.4),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
-                    const Text(
-                      'Hold button to speak',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                      ),
+                    child: Icon(
+                      _isMicActive ? Icons.mic : Icons.mic_none,
+                      color: Colors.white,
+                      size: 24,
                     ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.clear_all),
-                color: Colors.orange,
-                onPressed: () {
-                  chatProvider.clearChat();
-                },
-                tooltip: 'Clear chat',
-              ),
-            ],
+                  ),
+                );
+              }
+            },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildInputButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required Color color,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

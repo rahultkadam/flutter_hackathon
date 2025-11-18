@@ -87,12 +87,16 @@ class _SwipeableCardState extends State<SwipeableCard>
       });
     });
 
-    _animationController.forward();
+    _animationController.forward().then((_) {
+      _reset();
+    });
   }
 
   void _reset() {
-    _offset = Offset.zero;
-    _isDragging = false;
+    setState(() {
+      _offset = Offset.zero;
+      _isDragging = false;
+    });
     _animationController.reset();
   }
 
@@ -126,11 +130,11 @@ class _SwipeableCardState extends State<SwipeableCard>
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      Colors.green[50]!,
+                      Colors.green!,
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.green[300]!,
+                    color: Colors.green!,
                     width: 2,
                   ),
                 ),
@@ -157,9 +161,9 @@ class _SwipeableCardState extends State<SwipeableCard>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Colors.grey,
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: Colors.grey!),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -167,25 +171,25 @@ class _SwipeableCardState extends State<SwipeableCard>
                         children: [
                           Column(
                             children: [
-                              Icon(Icons.arrow_back, size: 28, color: Colors.red[600]),
+                              Icon(Icons.arrow_back, size: 28, color: Colors.red),
                               const SizedBox(height: 4),
                               Text('MYTH',
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.red[600])),
+                                      color: Colors.red)),
                             ],
                           ),
                           const SizedBox(width: 60),
                           Column(
                             children: [
-                              Icon(Icons.arrow_forward, size: 28, color: Colors.green[600]),
+                              Icon(Icons.arrow_forward, size: 28, color: Colors.green),
                               const SizedBox(height: 4),
                               Text('FACT',
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green[600])),
+                                      color: Colors.green)),
                             ],
                           ),
                         ],
