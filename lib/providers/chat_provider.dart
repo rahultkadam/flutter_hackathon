@@ -46,13 +46,28 @@ class ChatProvider extends ChangeNotifier {
         _userProfile!,
       );
 
-      // FIX #5: Generate follow-up suggestions dynamically
-      final followUps = _generateFollowUpSuggestions(response);
+      // --- NEW DYNAMIC FOLLOW-UP PARSING FROM API ---
+      // Uses format: Response text ... \n\nFOLLOW_UP:\n- Q1?\n- Q2?
+      List<String> followUps = [];
+      String displayResponse = response;
+      final followUpMarker = 'FOLLOW_UP:';
+      if (response.contains(followUpMarker)) {
+        final parts = response.split(followUpMarker);
+        displayResponse = parts[0].trim();
+        // Extract follow-up questions from lines after marker
+        followUps = parts[1]
+            .split('\n')
+            .map((l) => l.trim())
+            .where((l) => l.startsWith('-') || l.startsWith('•'))
+            .map((l) => l.replaceFirst(RegExp(r'^[-•]'), '').trim())
+            .where((l) => l.isNotEmpty)
+            .toList();
+      }
 
-      // Add AI message with follow-ups
+      // Add AI message with dynamic follow-ups from API
       _messages.add(ChatMessage(
         id: uuid.v4(),
-        content: response,
+        content: displayResponse,
         isUser: false,
         timestamp: DateTime.now(),
         suggestedFollowUps: followUps,
@@ -69,6 +84,7 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   void toggleFavorite(ChatMessage message) {
     final index = _messages.indexWhere((m) => m.id == message.id);
@@ -104,12 +120,11 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // FIX #5: Dynamic follow-up generation based on response content
+  // FIX #4: Generate contextual follow-up questions
   List<String> _generateFollowUpSuggestions(String response) {
     final followUps = <String>[];
     final lowerResponse = response.toLowerCase();
 
-    // Check for specific keywords and generate relevant follow-ups
     if (lowerResponse.contains('sip') || lowerResponse.contains('systematic')) {
       followUps.add('What is the minimum SIP amount to start?');
       followUps.add('Which mutual fund is best for SIP?');
@@ -150,16 +165,14 @@ class ChatProvider extends ChangeNotifier {
       followUps.add('How much coverage do I need?');
     }
 
-    // If no specific keywords found, provide generic follow-ups
+    // Default follow-ups if no keywords match
     if (followUps.isEmpty) {
       followUps.addAll([
         'Can you explain this in more detail?',
         'How does this apply to my situation?',
-        'What should I do next?',
       ]);
     }
 
-    // Return top 2 suggestions
     return followUps.take(2).toList();
   }
 }

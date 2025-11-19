@@ -6,76 +6,92 @@ import '../models/user_profile.dart';
 
 class PerplexityService {
   static const String _baseUrl = 'https://api.perplexity.ai/chat/completions';
+  static const String _apiKey = 'api-key'; // Replace with your key
 
-  // ⚠️ IMPORTANT: Replace with your API key from https://www.perplexity.ai/settings/api
-  static const String _apiKey = 'api-key';
-
+  // FIX #1 & #2: Updated prompt with finance restriction and follow-up questions
   Future<String> getChatResponse(
-  String userMessage,
-  UserProfile profile,
-) async {
-  if (_apiKey == 'YOUR_PERPLEXITY_API_KEY_HERE') {
-    throw Exception(
-      'Please set your Perplexity API key in lib/services/perplexity_service.dart',
-    );
-  }
+      String userMessage,
+      UserProfile profile,
+      ) async {
+    final systemPrompt = _buildSystemPrompt(profile);
 
-  final systemPrompt = _buildSystemPrompt(profile);
+    // FIX #1: Log the prompt being sent
+    print('=== PERPLEXITY API PROMPT ===');
+    print('System Prompt: $systemPrompt');
+    print('User Message: $userMessage');
+    print('============================');
 
-  try {
-    final response = await http
-        .post(
-          Uri.parse(_baseUrl),
-          headers: {
-            'Authorization': 'Bearer $_apiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'model': 'sonar',
-            'messages': [
-              {'role': 'system', 'content': systemPrompt},
-              {'role': 'user', 'content': userMessage}
-            ],
-            'max_tokens': 500,
-            'temperature': 0.7,
-          }),
-        )
-        .timeout(const Duration(seconds: 30));
+    try {
+      final response = await http
+          .post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Authorization': 'Bearer $_apiKey',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'model': 'sonar',
+          'messages': [
+            {'role': 'system', 'content': systemPrompt},
+            {'role': 'user', 'content': userMessage}
+          ],
+          'max_tokens': 600,
+          'temperature': 0.7,
+        }),
+      )
+          .timeout(const Duration(seconds: 30));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is Map && data.containsKey('choices')) {
+          final choices = data['choices'];
+          if (choices is List && choices.isNotEmpty) {
+            final firstChoice = choices[0]; // Get the first element from choices
+            if (firstChoice is Map && firstChoice.containsKey('message')) {
+              final message = firstChoice['message'];
+              if (message is Map && message.containsKey('content')) {
+                final responseText = message['content'] as String? ?? '';
 
-      // Safe parsing with type checking
-      if (data is Map && data.containsKey('choices')) {
-        final choices = data['choices'];
-        if (choices is List && choices.isNotEmpty) {
-          final firstChoice = choices[0];
-          if (firstChoice is Map && firstChoice.containsKey('message')) {
-            final message = firstChoice['message'];
-            if (message is Map && message.containsKey('content')) {
-              return message['content'] as String? ?? '';
+                // FIX #1: Log the response
+                print('=== API RESPONSE ===');
+                print(responseText);
+                print('===================');
+
+                return responseText;
+              }
             }
           }
         }
+        return 'Unable to parse response. Please try again.';
       }
-
-      return 'Unable to parse response. Please try again.';
-    } else {
-      final errorBody = jsonDecode(response.body);
-      throw Exception(
-        'API Error: ${response.statusCode} - ${errorBody['error']?['message'] ?? 'Unknown error'}',
-      );
+      else {
+        final errorBody = jsonDecode(response.body);
+        throw Exception(
+          'API Error: ${response.statusCode} - ${errorBody['error']?['message'] ?? 'Unknown error'}',
+        );
+      }
+    } catch (e) {
+      print('Error in getChatResponse: $e');
+      rethrow;
     }
-  } catch (e) {
-    rethrow;
   }
-}
 
-
+  // FIX #1 & #2: Enhanced system prompt
   String _buildSystemPrompt(UserProfile profile) {
-    return '''You are Money Buddy, a friendly financial advisor chatbot designed for Indian investors.
+    return '''You are Money Buddy, a friendly financial advisor chatbot designed EXCLUSIVELY for Indian investors.
+
+**CRITICAL RULES:**
+1. You ONLY answer questions related to finance, investments, banking, taxes, insurance, and money management.
+2. If the user asks about anything non-financial (weather, sports, general knowledge, etc.), respond with:
+   "I'm Money Buddy, your financial advisor! 💰 I specialize in helping you with investments, taxes, SIP, mutual funds, insurance, and financial planning. Please ask me a finance-related question!"
+3. ALWAYS end your response with 2 relevant related questions that the user may want to explore next in this exact format:
+
+FOLLOW_UP:
+- [First follow-up question]?
+- [Second follow-up question]?
 
 User Profile:
+- Name: ${profile.firstName} ${profile.lastName}
 - Age: ${profile.age} years old
 - Gender: ${profile.gender}
 - Occupation: ${profile.occupation}
@@ -84,26 +100,32 @@ User Profile:
 Your responsibilities:
 1. Provide personalized financial advice based on the user's profile
 2. Explain investment concepts in SIMPLE, plain language
-3. Focus on Indian financial products and context (SIP, mutual funds, PPF, NPS, ELSS, etc.)
-4. Use emojis occasionally to make conversations friendly and engaging
-5. Keep responses SHORT and concise (under 100 words)
+3. Focus on Indian financial products (SIP, mutual funds, PPF, NPS, ELSS, etc.)
+4. Use emojis occasionally to make conversations friendly
+5. Keep responses SHORT and concise (under 150 words)
 6. Provide age and income-appropriate suggestions
-7. Never give personalized investment advice without disclaimers
+7. Include disclaimers when needed
 8. Encourage long-term thinking and diversification
-9. Users are from india so focus on indian finance.
-
-Note : Strictly stick to your roles and responsibilities and don't answer to any question other than finance.
-Send generic response if any other question is received.
+9. **ALWAYS** end with 2 follow-up questions in the FOLLOW_UP: format
 
 Response Format:
-- Start with an engaging emoji or short greeting
-- Explain the concept in 2-3 simple sentences
+- Start with an emoji or short greeting
+- Answer in 2-3 simple sentences
 - Provide 1-2 practical examples relevant to their profile
-- End with an actionable tip or question
+- End with an actionable tip
+- **MUST** end with FOLLOW_UP: section with 2 questions
 
-Remember: You are teaching financial literacy, not trading strategies.''';
+Example:
+"Great question! 💡 SIP (Systematic Investment Plan) is a way to invest a fixed amount regularly in mutual funds...
+
+FOLLOW_UP:
+- What's the minimum amount to start a SIP?
+- Which mutual fund categories are best for beginners?"
+
+Remember: Finance topics ONLY. Always include FOLLOW_UP questions and FOLLOW_UP questions answer should be expected from API and not user ''';
   }
 
+  // Generate quiz questions from API
   Future<List<QuizQuestion>> generateQuizQuestions(
       UserProfile profile,
       String difficulty,
@@ -112,7 +134,6 @@ Remember: You are teaching financial literacy, not trading strategies.''';
     try {
       final prompt = '''
 Generate exactly $count multiple-choice financial quiz questions for a ${profile.age}-year-old ${profile.gender} with income ${profile.incomeRange}.
-User is from India. 
 Difficulty: $difficulty
 
 Format as JSON array with this structure:
@@ -179,7 +200,7 @@ Return ONLY the JSON array, no other text.
     try {
       final prompt = '''
 Generate exactly $count financial myth or fact statements for a ${profile.age}-year-old with income ${profile.incomeRange}.
-User is from India.
+
 Format as JSON array:
 [{
   "statement": "statement text",
@@ -207,6 +228,7 @@ Return ONLY the JSON array, no other text.
         final data = jsonDecode(response.body);
         final content = data['choices'][0]['message']['content'];
         final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(content);
+
         if (jsonMatch != null) {
           final jsonStr = jsonMatch.group(0)!;
           final List<dynamic> statementsJson = jsonDecode(jsonStr);
@@ -288,13 +310,11 @@ Return ONLY the JSON array, no other text.
         question: 'What is the lock-in period for ELSS mutual funds?',
         options: ['1 year', '2 years', '3 years', '5 years'],
         correctAnswer: 2,
-        explanation: 'ELSS (Equity Linked Savings Scheme) has a mandatory lock-in period of 3 years, the shortest among tax-saving instruments.',
+        explanation: 'ELSS has a mandatory lock-in period of 3 years, the shortest among tax-saving instruments.',
         category: 'Tax Saving',
         difficulty: 'Beginner',
       ),
-      // Add more fallback questions...
     ];
-
     return allQuestions.take(count).toList();
   }
 
@@ -316,9 +336,7 @@ Return ONLY the JSON array, no other text.
         category: 'Investment Basics',
         emoji: '🏦',
       ),
-      // Add more fallback statements...
     ];
-
     return allStatements.take(count).toList();
   }
 
@@ -330,5 +348,4 @@ Return ONLY the JSON array, no other text.
       'Explain SIP in 30 seconds',
     ];
   }
-
 }

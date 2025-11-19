@@ -19,11 +19,10 @@ class MythFactProvider extends ChangeNotifier {
   List<MythFactGameResult> _gameResults = [];
   UserProfile? _userProfile;
 
-  // Getters
   List<MythFactStatement> get currentStatements => _currentStatements;
   int get currentStatementIndex => _currentStatementIndex;
   MythFactStatement? get currentStatement =>
-      (_currentStatementIndex < _currentStatements.length && _currentStatements.isNotEmpty)
+      (_currentStatementIndex < _currentStatements.length)
           ? _currentStatements[_currentStatementIndex]
           : null;
 
@@ -35,31 +34,33 @@ class MythFactProvider extends ChangeNotifier {
   List<MythFactGameResult> get gameResults => _gameResults;
   int get totalAnswered => _userAnswers.length;
 
+  // FIX #7: Added to track last game result
+  MythFactGameResult? _lastGameResult;
+  MythFactGameResult? get lastGameResult => _lastGameResult;
+
   void setUserProfile(UserProfile? profile) {
     _userProfile = profile;
     notifyListeners();
   }
 
-  void preloadMyths(List<MythFactStatement> myths) {
-    _currentStatements = myths;
-    notifyListeners();
-  }
-
+  // FIX #7: Always fetch from API
   Future<void> startGame() async {
     if (_userProfile == null) return;
 
     _isLoading = true;
+    _lastGameResult = null; // Reset last result
     notifyListeners();
 
     try {
       await _loadGameData();
 
-      if (_currentStatements.isEmpty) {
-        _currentStatements = await _perplexityService.generateMythFactStatements(
-          _userProfile!,
-          20,
-        );
-      }
+      // FIX #7: Always fetch fresh statements from API
+      print('🎲 Fetching myth vs fact statements from API...');
+      _currentStatements = await _perplexityService.generateMythFactStatements(
+        _userProfile!,
+        20,
+      );
+      print('✅ Fetched ${_currentStatements.length} statements');
 
       _currentStatementIndex = 0;
       _correctAnswers = 0;
@@ -67,7 +68,7 @@ class MythFactProvider extends ChangeNotifier {
       _userAnswers = [];
       _isGameActive = true;
     } catch (e) {
-      print('Error starting game: $e');
+      print('❌ Error starting game: $e');
       _currentStatements = [];
       _isGameActive = false;
     }
@@ -80,9 +81,8 @@ class MythFactProvider extends ChangeNotifier {
     return userSwipedRight == statement.isFact;
   }
 
-  // FIX #7: Proper card advancement logic
   void processAnswer(bool isCorrect) {
-    if (!_isGameActive || _currentStatements.isEmpty) return;
+    if (!_isGameActive) return;
 
     _userAnswers.add(isCorrect);
 
@@ -92,16 +92,17 @@ class MythFactProvider extends ChangeNotifier {
       if (_streak > _maxStreak) {
         _maxStreak = _streak;
       }
+      print('✅ Correct! Score: $_correctAnswers/${_currentStatements.length}');
     } else {
       _streak = 0;
+      print('❌ Incorrect! Score: $_correctAnswers/${_currentStatements.length}');
     }
 
-    // CRITICAL: Advance index BEFORE notifyListeners
     if (_currentStatementIndex < _currentStatements.length - 1) {
       _currentStatementIndex++;
       notifyListeners();
     } else {
-      _isGameActive = false;
+      // FIX #7: End game when all questions answered
       endGame();
     }
   }
@@ -118,8 +119,11 @@ class MythFactProvider extends ChangeNotifier {
     );
 
     _gameResults.add(result);
+    _lastGameResult = result; // FIX #7: Store for results screen
+
     await _saveGameData();
 
+    print('🎮 Game ended. Final score: $_correctAnswers/${_currentStatements.length} (${result.percentage}%)');
     notifyListeners();
   }
 
@@ -154,6 +158,7 @@ class MythFactProvider extends ChangeNotifier {
     _streak = 0;
     _userAnswers = [];
     _isGameActive = false;
+    _lastGameResult = null;
     notifyListeners();
   }
 }

@@ -31,6 +31,7 @@ class _ResponseActionsState extends State<ResponseActions> {
     _isFavorite = widget.isFavorite;
   }
 
+  // FIX #5: Revert to original share functionality
   void _shareAsImage() async {
     try {
       await Share.share(
@@ -47,7 +48,6 @@ class _ResponseActionsState extends State<ResponseActions> {
       _isFavorite = !_isFavorite;
     });
     widget.onBookmark();
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -81,13 +81,13 @@ class _ResponseActionsState extends State<ResponseActions> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    // FIX #6: Proper padding for visibility
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.only(left: 48, right: 16, bottom: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
         children: [
           _ActionButton(
             icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -95,18 +95,21 @@ class _ResponseActionsState extends State<ResponseActions> {
             color: _isFavorite ? Colors.red : Colors.grey,
             onTap: _toggleFavorite,
           ),
+          const SizedBox(width: 8),
           _ActionButton(
             icon: Icons.share,
             label: 'Share',
             color: Colors.blue,
             onTap: _shareAsImage,
           ),
+          const SizedBox(width: 8),
           _ActionButton(
             icon: Icons.help_outline,
             label: 'Follow-up',
             color: Colors.orange,
             onTap: widget.onSuggestFollowUp,
           ),
+          const SizedBox(width: 8),
           _ActionButton(
             icon: _isPlaying ? Icons.stop : Icons.volume_up,
             label: _isPlaying ? 'Stop' : 'Listen',

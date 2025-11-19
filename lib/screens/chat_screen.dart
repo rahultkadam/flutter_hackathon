@@ -123,6 +123,7 @@ class _ChatScreenState extends State<ChatScreen> {
     await _textToSpeechService.speak(text);
   }
 
+  // In chat_screen.dart, update the _showProfileDialog method:
   void _showProfileDialog() {
     final profile = context.read<ChatProvider>().userProfile;
     if (profile != null) {
@@ -134,6 +135,8 @@ class _ChatScreenState extends State<ChatScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // FIX #5: Show full name
+              _buildProfileItem('Name', profile.fullName),
               _buildProfileItem('Age', '${profile.age} years'),
               _buildProfileItem('Gender', profile.gender),
               _buildProfileItem('Occupation', profile.occupation),
@@ -150,6 +153,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
   }
+
 
   Widget _buildProfileItem(String label, String value) {
     return Padding(

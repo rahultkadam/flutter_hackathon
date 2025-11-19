@@ -21,9 +21,9 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _occupationController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
+
   String _selectedGender = 'Male';
   String _selectedIncomeRange = '5-10 LPA';
-
   final List<String> _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
   final List<String> _incomeRanges = ['Below 5 LPA', '5-10 LPA', '10-20 LPA', '20-50 LPA', 'Above 50 LPA'];
 
@@ -164,6 +164,7 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
               ),
               const SizedBox(height: 32),
 
+              // FIX #3: Revert to original simple button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -193,25 +194,17 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
       );
 
       await StorageService().saveUserProfile(profile);
-      context.read<ChatProvider>().setUserProfile(profile);
-
-      await StorageService().saveUserProfile(profile);
-      context.read<ChatProvider>().setUserProfile(profile);
-      context.read<QuizProvider>().setUserProfile(profile);
-      context.read<MythFactProvider>().setUserProfile(profile);
-
-      // Prefetch all AI-powered content in background
-      PerplexityService().generateQuickSuggestions(profile).then((suggestions) {
-        // Optionally set suggestions in a provider/state.
-      });
-      PerplexityService().generateQuizQuestions(profile, 'Beginner', 5).then((quiz) {
-        context.read<QuizProvider>().preloadQuiz(quiz);
-      });
-      /*PerplexityService().generateMythFactStatements(profile, 20).then((myths) {
-        context.read<MythFactProvider>().preloadMyths(myths);
-      });*/
 
       if (mounted) {
+        context.read<ChatProvider>().setUserProfile(profile);
+        context.read<QuizProvider>().setUserProfile(profile);
+        context.read<MythFactProvider>().setUserProfile(profile);
+
+        // Prefetch content
+        PerplexityService().generateQuizQuestions(profile, 'Beginner', 5).then((quiz) {
+          context.read<QuizProvider>().preloadQuiz(quiz);
+        });
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
@@ -225,6 +218,7 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _ageController.dispose();
+    _occupationController.dispose();
     super.dispose();
   }
 }
