@@ -6,8 +6,9 @@ import '../providers/chat_provider.dart';
 import '../services/perplexity_service.dart';
 import '../providers/quiz_provider.dart';
 import '../providers/myth_fact_provider.dart';
-import 'main_navigation_screen.dart';
 import '../providers/daily_fact_provider.dart';
+import '../widgets/theme_toggle.dart';
+import 'main_navigation_screen.dart';
 
 class ProfileInputScreen extends StatefulWidget {
   const ProfileInputScreen({Key? key}) : super(key: key);
@@ -34,6 +35,9 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
       appBar: AppBar(
         title: const Text('Create Your Profile'),
         elevation: 0,
+        actions: const [
+          ThemeToggleButton(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/chat_features.dart';
+import '../theme/app_theme.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -17,7 +18,7 @@ class ChatBubble extends StatelessWidget {
         children: [
           if (!message.isUser) ...[
             CircleAvatar(
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.primaryPurple,
               child: const Text('💰', style: TextStyle(fontSize: 20)),
             ),
             const SizedBox(width: 8),
@@ -26,7 +27,7 @@ class ChatBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: message.isUser ? Colors.green : Colors.grey,
+                color: message.isUser ? AppColors.primaryPurple : Colors.grey,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),

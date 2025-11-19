@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/chat_features.dart';
+import '../theme/app_theme.dart';
 
 class ChatHistoryPanel extends StatelessWidget {
   final List<ChatMessage> favoriteMessages;
@@ -19,7 +20,7 @@ class ChatHistoryPanel extends StatelessWidget {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.green,
+              color: AppColors.primaryPurple,
             ),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +107,7 @@ class ChatHistoryPanel extends StatelessWidget {
               icon: const Icon(Icons.history),
               label: const Text('View All History'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.primaryPurple,
               ),
             ),
           ),

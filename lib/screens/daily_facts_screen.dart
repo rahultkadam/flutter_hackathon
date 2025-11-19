@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/daily_fact_provider.dart';
 import '../widgets/daily_fact_card.dart';
 import '../models/daily_fact_models.dart';
+import '../theme/app_theme.dart';
 
 class DailyFactsScreen extends StatefulWidget {
   const DailyFactsScreen({Key? key}) : super(key: key);
@@ -120,7 +121,7 @@ class _DailyFactsScreenState extends State<DailyFactsScreen> {
                 value: (provider.currentFactIndex + 1) /
                     provider.todaysFacts.length,
                 backgroundColor: Colors.grey,
-                color: Colors.green,
+                color: AppColors.primaryPurple,
                 minHeight: 8,
               ),
             ],
@@ -162,7 +163,7 @@ class _DailyFactsScreenState extends State<DailyFactsScreen> {
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Next'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.primaryPurple,
                 ),
               ),
             ],
@@ -193,7 +194,7 @@ class _DailyFactsScreenState extends State<DailyFactsScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.grey!),
+                  bottom: BorderSide(color: Colors.grey),
                 ),
               ),
               child: Row(
@@ -295,7 +296,7 @@ class _DailyFactsScreenState extends State<DailyFactsScreen> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.bookmark,
-                                  color: Colors.green),
+                                  color: AppColors.primaryPurple),
                               onPressed: () {
                                 context
                                     .read<DailyFactProvider>()
@@ -332,8 +333,8 @@ class _DailyFactsScreenState extends State<DailyFactsScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.green!,
-                Colors.blue!,
+                AppColors.primaryPurple,
+                AppColors.primaryPurple.withOpacity(0.7),
               ],
             ),
           ),

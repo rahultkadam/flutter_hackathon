@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/quiz_provider.dart';
 import '../widgets/quiz_card.dart';
+import '../theme/app_theme.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({Key? key}) : super(key: key);
@@ -97,9 +98,13 @@ class _QuizScreenState extends State<QuizScreen> {
           ],
 
           // Difficulty Selection - FIXED VISIBILITY
-          const Text(
+          Text(
             'Select Difficulty',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 16, 
+              fontWeight: FontWeight.bold, 
+              color: Theme.of(context).textTheme.titleMedium?.color
+            ),
           ),
           const SizedBox(height: 12),
           Column(
@@ -117,16 +122,16 @@ class _QuizScreenState extends State<QuizScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.green : Colors.white,
+                      color: isSelected ? AppColors.primaryPurple : Theme.of(context).colorScheme.surface,
                       border: Border.all(
-                        color: isSelected ? Colors.green! : Colors.grey!,
+                        color: isSelected ? AppColors.primaryPurple : Theme.of(context).colorScheme.outline,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         if (isSelected)
                           BoxShadow(
-                            color: Colors.green.withOpacity(0.3),
+                            color: AppColors.primaryPurple.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -140,7 +145,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
                         if (isSelected)
@@ -179,7 +184,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.primaryPurple,
               ),
             ),
           ),
@@ -222,7 +227,7 @@ class _QuizScreenState extends State<QuizScreen> {
               quizProvider.currentQuiz.length,
           minHeight: 8,
           backgroundColor: Colors.grey,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.green!),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryPurple),
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -276,7 +281,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   icon: const Icon(Icons.check),
                   label: const Text('Submit'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.primaryPurple,
                   ),
                 ),
             ],

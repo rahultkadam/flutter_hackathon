@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
+import '../theme/app_theme.dart';
 import 'profile_input_screen.dart';
 import 'chat_screen.dart';
 
@@ -51,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.green.shade400,
-              Colors.green.shade700,
+              AppColors.primaryPurple.withOpacity(0.8),
+              AppColors.primaryPurple,
             ],
           ),
         ),

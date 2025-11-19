@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/myth_fact_provider.dart';
 import '../widgets/swipeable_card.dart';
+import '../theme/app_theme.dart';
 
 class MythFactScreen extends StatefulWidget {
   const MythFactScreen({Key? key}) : super(key: key);
@@ -203,19 +204,26 @@ class _MythFactScreenState extends State<MythFactScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Center(
+          Center(
             child: Column(
               children: [
                 Text('🎲', style: TextStyle(fontSize: 64)),
                 SizedBox(height: 16),
                 Text(
                   'Myth vs Fact',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 28, 
+                    fontWeight: FontWeight.bold, 
+                    color: Theme.of(context).textTheme.headlineMedium?.color
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Swipe right for FACT, left for MYTH',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 14, 
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -259,22 +267,66 @@ class _MythFactScreenState extends State<MythFactScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.primaryPurple.withOpacity(0.1)
+                  : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.primaryPurple.withOpacity(0.3)
+                    : Colors.grey.shade300,
+              ),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 Text(
                   '📖 How to Play',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue),
+                  style: TextStyle(
+                    fontSize: 14, 
+                    fontWeight: FontWeight.bold, 
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.primaryPurple
+                        : Colors.black87,
+                  ),
                 ),
                 SizedBox(height: 12),
-                Text('• Swipe RIGHT if you think it\'s a FACT', style: TextStyle(fontSize: 12)),
-                Text('• Swipe LEFT if you think it\'s a MYTH', style: TextStyle(fontSize: 12)),
-                Text('• Learn the explanation after each card', style: TextStyle(fontSize: 12)),
-                Text('• Build your streak with correct answers', style: TextStyle(fontSize: 12)),
+                Text(
+                  '• Swipe RIGHT if you think it\'s a FACT', 
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.white
+                        : Colors.black87,
+                  ),
+                ),
+                Text(
+                  '• Swipe LEFT if you think it\'s a MYTH', 
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.white
+                        : Colors.black87,
+                  ),
+                ),
+                Text(
+                  '• Learn the explanation after each card', 
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.white
+                        : Colors.black87,
+                  ),
+                ),
+                Text(
+                  '• Build your streak with correct answers', 
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.white
+                        : Colors.black87,
+                  ),
+                ),
               ],
             ),
           ),
@@ -379,7 +431,7 @@ class _MythFactScreenState extends State<MythFactScreen> {
               decoration: BoxDecoration(
                 color: Colors.blue,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue!),
+                border: Border.all(color: Colors.blue),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

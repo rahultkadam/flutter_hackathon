@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/quiz_models.dart';
+import '../theme/app_theme.dart';
 
 class QuizCard extends StatelessWidget {
   final QuizQuestion question;
@@ -24,7 +25,7 @@ class QuizCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.all(16),
       elevation: 6,
-      color: Colors.white,
+      color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -40,14 +41,14 @@ class QuizCard extends StatelessWidget {
                   'Question $questionNumber/$totalQuestions',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Colors.green[600],
+                    color: AppColors.primaryPurple,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -66,11 +67,11 @@ class QuizCard extends StatelessWidget {
             // Question text
             Text(
               question.question,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.bold,
                 height: 1.5,
-                color: Colors.black87,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             const SizedBox(height: 24),
@@ -86,26 +87,30 @@ class QuizCard extends StatelessWidget {
               // Color logic
               Color bgColor;
               Color borderColor;
-              Color textColor = Colors.black87;
+              Color textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
 
               if (isAnswered) {
                 if (isCorrect) {
-                  bgColor = Colors.green[50]!;
-                  borderColor = Colors.green[600]!;
+                  bgColor = AppColors.successGreen.withOpacity(0.1);
+                  borderColor = AppColors.successGreen;
+                  textColor = AppColors.successGreen.withOpacity(0.9);
                 } else if (isWrong) {
-                  bgColor = Colors.red[50]!;
-                  borderColor = Colors.red[400]!;
-                  textColor = Colors.red[800]!;
+                  bgColor = AppColors.errorRed.withOpacity(0.1);
+                  borderColor = AppColors.errorRed;
+                  textColor = AppColors.errorRed.withOpacity(0.9);
                 } else {
-                  bgColor = Colors.white;
-                  borderColor = Colors.grey[300]!;
+                  bgColor = Theme.of(context).colorScheme.surface;
+                  borderColor = Theme.of(context).colorScheme.outline;
+                  textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
                 }
               } else if (isSelected) {
-                bgColor = Colors.blue[50]!;
-                borderColor = Colors.blue[600]!;
+                bgColor = AppColors.primaryPurple.withOpacity(0.1);
+                borderColor = AppColors.primaryPurple;
+                textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
               } else {
-                bgColor = Colors.white;
-                borderColor = Colors.grey[300]!;
+                bgColor = Theme.of(context).colorScheme.surface;
+                borderColor = Theme.of(context).colorScheme.outline;
+                textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
               }
 
               return Padding(
@@ -130,19 +135,19 @@ class QuizCard extends StatelessWidget {
                               color: isSelected
                                   ? (isAnswered
                                   ? (isCorrect
-                                  ? Colors.green
-                                  : Colors.red)
-                                  : Colors.blue)
-                                  : Colors.grey[400]!,
+                                  ? AppColors.successGreen
+                                  : AppColors.errorRed)
+                                  : AppColors.primaryPurple)
+                                  : Theme.of(context).colorScheme.outline,
                               width: 2,
                             ),
                             color: isSelected
                                 ? (isAnswered
                                 ? (isCorrect
-                                ? Colors.green[100]
-                                : Colors.red[100])
-                                : Colors.blue[100])
-                                : Colors.white,
+                                ? AppColors.successGreen.withOpacity(0.2)
+                                : AppColors.errorRed.withOpacity(0.2))
+                                : AppColors.primaryPurple.withOpacity(0.2))
+                                : Theme.of(context).colorScheme.surface,
                           ),
                           child: isSelected
                               ? Center(
@@ -155,9 +160,9 @@ class QuizCard extends StatelessWidget {
                               size: 14,
                               color: isAnswered
                                   ? (isCorrect
-                                  ? Colors.green
-                                  : Colors.red)
-                                  : Colors.blue,
+                                  ? AppColors.successGreen
+                                  : AppColors.errorRed)
+                                  : AppColors.primaryPurple,
                             ),
                           )
                               : null,
@@ -176,9 +181,9 @@ class QuizCard extends StatelessWidget {
                           ),
                         ),
                         if (isAnswered && isCorrect)
-                          const Icon(Icons.check_circle, color: Colors.green),
+                          Icon(Icons.check_circle, color: AppColors.successGreen),
                         if (isWrong)
-                          const Icon(Icons.cancel, color: Colors.red),
+                          Icon(Icons.cancel, color: AppColors.errorRed),
                       ],
                     ),
                   ),
@@ -191,18 +196,18 @@ class QuizCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.primaryPurple.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(color: AppColors.primaryPurple.withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       '💡 Explanation',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                        color: AppColors.primaryPurple,
                         fontSize: 15,
                       ),
                     ),
@@ -211,7 +216,7 @@ class QuizCard extends StatelessWidget {
                       question.explanation,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[900],
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                         height: 1.5,
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/daily_fact_models.dart';
+import '../theme/app_theme.dart';
 
 class DailyFactCard extends StatefulWidget {
   final DailyFact fact;
@@ -141,8 +142,8 @@ class _DailyFactCardState extends State<DailyFactCard>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.green!,
-                      Colors.blue!,
+                      AppColors.primaryPurple,
+                      AppColors.primaryPurple.withOpacity(0.7),
                     ],
                   ),
                 ),
@@ -277,7 +278,7 @@ class _DailyFactCardState extends State<DailyFactCard>
                               ? Icons.bookmark
                               : Icons.bookmark_border,
                           color: widget.fact.isBookmarked
-                              ? Colors.green
+                              ? AppColors.primaryPurple
                               : Colors.grey,
                           size: 28,
                         ),

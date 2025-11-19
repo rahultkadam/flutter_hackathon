@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/theme_toggle.dart';
 import 'chat_screen.dart';
 import 'quiz_screen.dart';
 import 'myth_fact_screen.dart';
@@ -24,6 +25,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Money Buddy'),
+        actions: const [
+          ThemeToggleButton(),
+        ],
+      ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -33,8 +40,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),

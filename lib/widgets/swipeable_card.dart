@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/myth_fact_models.dart';
+import '../theme/app_theme.dart';
 
 class SwipeableCard extends StatefulWidget {
   final MythFactStatement statement;
@@ -130,11 +131,11 @@ class _SwipeableCardState extends State<SwipeableCard>
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      Colors.green!,
+                      AppColors.primaryPurple.withOpacity(0.1),
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.green!,
+                    color: AppColors.primaryPurple.withOpacity(0.3),
                     width: 2,
                   ),
                 ),
@@ -159,38 +160,71 @@ class _SwipeableCardState extends State<SwipeableCard>
                     ),
                     const SizedBox(height: 48),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.grey!),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Column(
-                            children: [
-                              Icon(Icons.arrow_back, size: 28, color: Colors.red),
-                              const SizedBox(height: 4),
-                              Text('MYTH',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red)),
-                            ],
+                          // MYTH section
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.errorRed.withOpacity(0.1),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(25),
+                                bottomLeft: Radius.circular(25),
+                              ),
+                              border: Border.all(
+                                color: AppColors.errorRed.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.arrow_back, size: 24, color: AppColors.errorRed),
+                                const SizedBox(height: 4),
+                                Text('MYTH',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.errorRed)),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 60),
-                          Column(
-                            children: [
-                              Icon(Icons.arrow_forward, size: 28, color: Colors.green),
-                              const SizedBox(height: 4),
-                              Text('FACT',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green)),
-                            ],
+                          // FACT section
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.successGreen.withOpacity(0.1),
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(25),
+                                bottomRight: Radius.circular(25),
+                              ),
+                              border: Border.all(
+                                color: AppColors.successGreen.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.arrow_forward, size: 24, color: AppColors.successGreen),
+                                const SizedBox(height: 4),
+                                Text('FACT',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.successGreen)),
+                              ],
+                            ),
                           ),
                         ],
                       ),

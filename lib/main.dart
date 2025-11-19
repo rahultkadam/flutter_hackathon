@@ -4,8 +4,10 @@ import 'dart:io';
 import 'providers/chat_provider.dart';
 import 'providers/quiz_provider.dart';
 import 'providers/myth_fact_provider.dart';
-import 'providers/daily_fact_provider.dart'; // NEW IMPORT
+import 'providers/daily_fact_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 // SSL bypass for development only
 class MyHttpOverrides extends HttpOverrides {
@@ -26,6 +28,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => QuizProvider()),
         ChangeNotifierProvider(create: (_) => MythFactProvider()),
         ChangeNotifierProvider(create: (_) => DailyFactProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -37,18 +40,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Money Buddy',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 2,
-        ),
-      ),
-      home: const SplashScreen(),
-      debugShowCheckedModeBanner: false,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Money Buddy',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

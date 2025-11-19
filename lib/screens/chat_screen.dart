@@ -8,6 +8,7 @@ import '../widgets/response_actions.dart';
 import '../widgets/chat_history_panel.dart';
 import '../services/text_to_speech_service.dart';
 import '../services/speech_to_text_service.dart';
+import '../theme/app_theme.dart';
 import 'chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
           const SnackBar(
             content: Text('✅ Voice captured. Review and tap Send'),
             duration: Duration(seconds: 2),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.primaryPurple,
           ),
         );
       }
@@ -174,7 +175,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('💰 Money Buddy'),
+        title: const Text('Chat With 💰 Money Buddy'),
         elevation: 0,
         actions: [
           IconButton(
@@ -306,9 +307,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                             child: Container(
                                               width: double.infinity,
                                               decoration: BoxDecoration(
-                                                color: Colors.green,
+                                                color: AppColors.primaryPurple,
                                                 border: Border.all(
-                                                  color: Colors.green!,
+                                                  color: AppColors.primaryPurple,
                                                 ),
                                                 borderRadius:
                                                 BorderRadius.circular(8),
@@ -399,34 +400,38 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // FIX #1: WhatsApp-style send/mic button
+  // FIX #1: WhatsApp-style send/mic button with floating design
   Widget _buildInputArea(ChatProvider chatProvider) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            offset: const Offset(0, -2),
-            blurRadius: 4,
-            color: Colors.black.withOpacity(0.1),
+            offset: const Offset(0, 2),
+            blurRadius: 12,
+            spreadRadius: 1,
+            color: Colors.black.withOpacity(0.15),
           ),
         ],
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _messageController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Ask me anything...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.grey!),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
                 ),
               ),
               maxLines: null,
@@ -449,7 +454,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 return FloatingActionButton(
                   mini: true,
                   onPressed: chatProvider.isLoading ? null : _sendMessage,
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.primaryPurple,
                   child: const Icon(Icons.send, size: 20, color: Colors.white),
                 );
               } else {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
 import '../services/perplexity_service.dart';
+import '../theme/app_theme.dart';
 
 class QuickSuggestions extends StatefulWidget {
   final Function(String) onSuggestionTap;
@@ -74,7 +75,7 @@ class _QuickSuggestionsState extends State<QuickSuggestions> {
                   constraints: const BoxConstraints(maxWidth: 180), // prevent overflow on wide texts
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.green[600],
+                    color: AppColors.primaryPurple,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
