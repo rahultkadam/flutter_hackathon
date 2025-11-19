@@ -105,7 +105,11 @@ class _SwipeableCardState extends State<SwipeableCard>
   Widget build(BuildContext context) {
     final rotationZ = _offset.dx / 300;
     final opacity = (1 - (_offset.dx.abs() / 500).clamp(0, 1)).toDouble();
-
+    
+    // Get screen size for responsive design
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenHeight < 700; // Consider as mobile if height < 700px
+    
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragUpdate: _onDragUpdate,
@@ -117,7 +121,7 @@ class _SwipeableCardState extends State<SwipeableCard>
           child: Opacity(
             opacity: opacity,
             child: Card(
-              margin: const EdgeInsets.all(24),
+              margin: EdgeInsets.all(isMobile ? 16 : 24), // Reduced margin for mobile
               elevation: 10,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -139,26 +143,32 @@ class _SwipeableCardState extends State<SwipeableCard>
                     width: 2,
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 32),
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 24 : 36, // Reduced vertical padding for mobile
+                  horizontal: isMobile ? 20 : 32, // Reduced horizontal padding for mobile
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min, // Important: Use min to prevent overflow
                   children: [
                     Text(
                       widget.statement.emoji,
-                      style: const TextStyle(fontSize: 64),
+                      style: TextStyle(fontSize: isMobile ? 48 : 64), // Smaller emoji for mobile
                     ),
-                    const SizedBox(height: 32),
-                    Text(
-                      widget.statement.statement,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        height: 1.4,
-                        color: Colors.black87,
+                    SizedBox(height: isMobile ? 20 : 32), // Reduced spacing for mobile
+                    Flexible( // Wrap text in Flexible to prevent overflow
+                      child: Text(
+                        widget.statement.statement,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isMobile ? 18 : 22, // Smaller text for mobile
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    SizedBox(height: isMobile ? 32 : 48), // Reduced spacing for mobile
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(25),
@@ -176,7 +186,10 @@ class _SwipeableCardState extends State<SwipeableCard>
                         children: [
                           // MYTH section
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 16 : 20,
+                              vertical: isMobile ? 8 : 12,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.errorRed.withOpacity(0.1),
                               borderRadius: BorderRadius.only(
@@ -190,11 +203,11 @@ class _SwipeableCardState extends State<SwipeableCard>
                             ),
                             child: Column(
                               children: [
-                                Icon(Icons.arrow_back, size: 24, color: AppColors.errorRed),
-                                const SizedBox(height: 4),
+                                Icon(Icons.arrow_back, size: isMobile ? 20 : 24, color: AppColors.errorRed),
+                                SizedBox(height: isMobile ? 2 : 4),
                                 Text('MYTH',
                                     style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: isMobile ? 10 : 12,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.errorRed)),
                               ],
@@ -202,7 +215,10 @@ class _SwipeableCardState extends State<SwipeableCard>
                           ),
                           // FACT section
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 16 : 20,
+                              vertical: isMobile ? 8 : 12,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.successGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.only(
@@ -216,11 +232,11 @@ class _SwipeableCardState extends State<SwipeableCard>
                             ),
                             child: Column(
                               children: [
-                                Icon(Icons.arrow_forward, size: 24, color: AppColors.successGreen),
-                                const SizedBox(height: 4),
+                                Icon(Icons.arrow_forward, size: isMobile ? 20 : 24, color: AppColors.successGreen),
+                                SizedBox(height: isMobile ? 2 : 4),
                                 Text('FACT',
                                     style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: isMobile ? 10 : 12,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.successGreen)),
                               ],
