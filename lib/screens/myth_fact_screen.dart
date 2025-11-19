@@ -259,9 +259,9 @@ class _MythFactScreenState extends State<MythFactScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Colors.blue.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue!),
+              border: Border.all(color: Colors.blue),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,11 +295,16 @@ class _MythFactScreenState extends State<MythFactScreen> {
                   ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
                   : const Icon(Icons.play_arrow),
               label: Text(
-                mythFactProvider.isLoading ? 'Generating Statements...' : 'Start Game',
+                mythFactProvider.isLoading
+                    ? 'Loading Myth vs Fact statements...'
+                    : 'Start Game',
                 style: const TextStyle(fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
@@ -312,6 +317,7 @@ class _MythFactScreenState extends State<MythFactScreen> {
       ),
     );
   }
+
 
   Widget _buildGameScreen(MythFactProvider mythFactProvider) {
     final currentStatement = mythFactProvider.currentStatement;

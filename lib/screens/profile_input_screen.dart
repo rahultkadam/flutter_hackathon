@@ -7,6 +7,7 @@ import '../services/perplexity_service.dart';
 import '../providers/quiz_provider.dart';
 import '../providers/myth_fact_provider.dart';
 import 'main_navigation_screen.dart';
+import '../providers/daily_fact_provider.dart';
 
 class ProfileInputScreen extends StatefulWidget {
   const ProfileInputScreen({Key? key}) : super(key: key);
@@ -199,6 +200,7 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
         context.read<ChatProvider>().setUserProfile(profile);
         context.read<QuizProvider>().setUserProfile(profile);
         context.read<MythFactProvider>().setUserProfile(profile);
+        context.read<DailyFactProvider>().setUserProfile(profile); // NEW LINE
 
         // Prefetch content
         PerplexityService().generateQuizQuestions(profile, 'Beginner', 5).then((quiz) {

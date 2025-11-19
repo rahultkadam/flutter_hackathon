@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../models/myth_fact_models.dart';
 import '../models/quiz_models.dart';
 import '../models/user_profile.dart';
+import '../models/daily_fact_models.dart';
 
 class PerplexityService {
   static const String _baseUrl = 'https://api.perplexity.ai/chat/completions';
@@ -348,4 +349,207 @@ Return ONLY the JSON array, no other text.
       'Explain SIP in 30 seconds',
     ];
   }
+
+  // ADD THIS METHOD TO YOUR EXISTING PerplexityService CLASS
+
+  Future<List<DailyFact>> generateDailyFacts(
+      UserProfile profile,
+      int count,
+      ) async {
+    try {
+
+      final prompt = '''
+Generate exactly $count mind-blowing, interesting financial facts for a ${profile.age}-year-old with income ${profile.incomeRange} & occupation - ${profile.occupation}.
+
+Create a balanced mix of:
+
+Positive, inspiring financial stories:
+
+-legendary investment wins
+-smart long-term wealth strategies
+-Indian stock market success stories (Infosys IPO, Sensex growth, SIP compounding, etc.)
+-entrepreneurs and investors who made brilliant decisions
+-Crazy investment bubbles (tulips, beanie babies, crypto)
+
+Negative or cautionary stories:
+
+-historical financial disasters (dot-com crash, Great Depression, 2008 crisis)
+-speculative bubbles (tulip mania, beanie babies, crypto manias)
+-corporate scandals (Enron, Lehman Brothers, Satyam)
+-famous investor mistakes and losses
+-Shocking corporate scandals (Enron, Lehman Brothers)
+
+Neutral / weird / fun financial trivia:
+-unusual economic events
+-strange market behaviors
+-odd financial rules, loopholes, or historical quirks
+-Economic phenomena that seem unbelievable
+
+Proportion rule:
+40 percent positive + 40 percent negative + 20 percent neutral or weird trivia.
+The tone must be mind-blowing, surprising, and also motivating so the user feels excited to learn more about finance and investing.
+Give priority to Indian Market.
+
+Each fact must create reactions like:
+"OMG, I didn't know that!"
+"Wow, that's crazy!"
+"This makes me want to learn more!"
+
+Each fact should make someone say "OMG, I didn't know that!" or "Wow, that's crazy!"
+
+Format as JSON array:
+[{
+  "headline": "Did you know... [short catchy 1-2 line fact]",
+  "fullExplanation": "Detailed explanation with context, dates, and why it matters (3-4 sentences)",
+  "category": "Bubbles/Crashes/Scandals/Trivia/Investors",
+  "emoji": "relevant emoji"
+}]
+
+Return ONLY the JSON array, no other text.
+''';
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Authorization': 'Bearer $_apiKey',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'model': 'sonar',
+          'messages': [{'role': 'user', 'content': prompt}],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final choices = data['choices'];
+        String? content;
+        if (choices is List &&
+            choices.isNotEmpty &&
+            choices[0] is Map &&
+            (choices[0] as Map).containsKey('message')) {
+          final msg = choices[0]['message']; // FIXED: choices[0] not choices
+          if (msg is Map && msg.containsKey('content')) {
+            content = msg['content'] as String?;
+          } else if (msg is String) {
+            content = msg;
+          }
+        }
+
+
+        if (content != null) {
+          final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(content);
+          if (jsonMatch != null) {
+            final jsonStr = jsonMatch.group(0)!;
+            final List factsJson = jsonDecode(jsonStr);
+
+            return factsJson.asMap().entries.map((entry) {
+              final f = entry.value;
+              return DailyFact(
+                id: entry.key + 1,
+                headline: f['headline'] as String,
+                fullExplanation: f['fullExplanation'] as String,
+                category: 'Trivia',
+                emoji: f['emoji'] as String? ?? '💡',
+                date: DateTime.now(),
+              );
+            }).toList();
+          }
+        }
+      }
+
+      return _getFallbackFacts(count);
+    } catch (e) {
+      print('Error generating trivia: $e');
+      return _getFallbackFacts(count);
+    }
+  }
+
+  List<DailyFact> _getFallbackFacts(int count) {
+    final fallbacks = [
+      DailyFact(
+        id: 1,
+        headline: 'Did you know the dot-com bubble had companies with no product—just vibes?',
+        fullExplanation: 'During the late 1990s dot-com bubble, companies with no revenue, no products, and sometimes just a domain name raised millions. Pets.com spent \$300 million before going bankrupt in 268 days. The bubble burst in 2000, erasing \$5 trillion in value.',
+        category: 'Trivia',
+        emoji: '💥',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 2,
+        headline: 'Did you know the Great Depression began partly because people bought stocks with borrowed money?',
+        fullExplanation: 'In the 1920s, you could buy stocks with only 10% down payment, borrowing the rest. When the market crashed in 1929, these "margin calls" forced mass sell-offs, creating a death spiral. The Dow Jones lost 89% of its value by 1932.',
+        category: 'Trivia',
+        emoji: '📉',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 3,
+        headline: 'Did you know a 17th-century bubble promised profits from a business "doing nothing at all"?',
+        fullExplanation: 'During the South Sea Bubble of 1720, one scammer literally advertised shares for "a company for carrying out an undertaking of great advantage, but nobody to know what it is." He raised £2,000 in a day, then disappeared forever.',
+        category: 'Trivia',
+        emoji: '🎪',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 4,
+        headline: 'Did you know banks in 2008 were selling risky mortgages like Black Friday deals?',
+        fullExplanation: 'Banks gave mortgages to people with no income verification (NINJA loans - No Income, No Job, no Assets), then packaged them as "safe" AAA-rated securities. When housing prices fell, \$2 trillion vanished and Lehman Brothers collapsed overnight.',
+        category: 'Trivia',
+        emoji: '🏚️',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 5,
+        headline: 'Did you know investors once believed beanie babies would make them rich?',
+        fullExplanation: 'In the 1990s, people bought Beanie Babies thinking they\'d be worth millions. Rare ones sold for \$5,000+. Today, 99% are worthless. One guy spent \$100,000 on them and later got divorced over his collection. His wife got half the beanie babies.',
+        category: 'Trivia',
+        emoji: '🧸',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 6,
+        headline: 'Did you know a single accounting lie can cost more than an actual crime?',
+        fullExplanation: 'Enron\'s CFO hid \$1 billion in debt using fake companies. When exposed in 2001, \$74 billion in shareholder value vanished. 20,000 employees lost jobs and pensions. The CEO got 24 years in prison—longer than many violent criminals.',
+        category: 'Trivia',
+        emoji: '🎭',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 7,
+        headline: 'Did you know Warren Buffett still lives in a house he bought for \$31,500 in 1958?',
+        fullExplanation: 'Despite being worth \$120+ billion, Buffett lives in his Omaha home bought for \$31,500 (about \$340,000 today). He drives a modest car, doesn\'t carry a smartphone, and once said his greatest investment was a \$100 public speaking course.',
+        category: 'Trivia',
+        emoji: '🏡',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 8,
+        headline: 'Did you know tulips were once worth more than houses in Holland?',
+        fullExplanation: 'During "Tulip Mania" in 1637, a single tulip bulb sold for 10 times a skilled worker\'s annual salary. One rare bulb was traded for a house in Amsterdam. When the bubble burst, prices dropped 99% in weeks, bankrupting thousands.',
+        category: 'Trivia',
+        emoji: '🌷',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 9,
+        headline: 'Did you know Bitcoin pizza cost \$10...and would be worth \$650 million today?',
+        fullExplanation: 'On May 22, 2010, programmer Laszlo Hanyecz paid 10,000 Bitcoin for two pizzas—the first Bitcoin transaction for physical goods. At Bitcoin\'s \$65,000 peak, those pizzas were worth \$650 million. May 22 is now "Bitcoin Pizza Day."',
+        category: 'Trivia',
+        emoji: '🍕',
+        date: DateTime.now(),
+      ),
+      DailyFact(
+        id: 10,
+        headline: 'Did you know the 2008 crisis started with a \$1.2 billion lie about mortgage quality?',
+        fullExplanation: 'Rating agencies like Moody\'s and S&P gave AAA ratings (highest safety) to mortgage bundles that were 90% junk. Internal emails later revealed analysts knew they were "rating garbage" but did it anyway for profit. Fines: \$2 billion. Damage: \$10+ trillion.',
+        category: 'Trivia',
+        emoji: '💣',
+        date: DateTime.now(),
+      ),
+    ];
+
+    return fallbacks.take(count).toList();
+  }
+
 }

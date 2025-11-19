@@ -4,6 +4,7 @@ import 'dart:io';
 import 'providers/chat_provider.dart';
 import 'providers/quiz_provider.dart';
 import 'providers/myth_fact_provider.dart';
+import 'providers/daily_fact_provider.dart'; // NEW IMPORT
 import 'screens/splash_screen.dart';
 
 // SSL bypass for development only
@@ -24,6 +25,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => QuizProvider()),
         ChangeNotifierProvider(create: (_) => MythFactProvider()),
+        ChangeNotifierProvider(create: (_) => DailyFactProvider()),
       ],
       child: const MyApp(),
     ),
