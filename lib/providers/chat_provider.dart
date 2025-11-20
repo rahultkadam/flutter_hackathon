@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user_profile.dart';
 import '../models/chat_features.dart';
+import '../models/disclaimer_config.dart';
 import '../services/perplexity_service.dart';
+import '../utils/disclaimer_helper.dart';
 
 class ChatProvider extends ChangeNotifier {
   final PerplexityService _perplexityService = PerplexityService();
@@ -35,6 +37,22 @@ class ChatProvider extends ChangeNotifier {
       isUser: true,
       timestamp: DateTime.now(),
     ));
+    
+    // Check if this is a high-risk query and add contextual warning
+    final isHighRisk = DisclaimerHelper.containsHighRiskQuery(content);
+    if (isHighRisk) {
+      // Add a non-intrusive warning message from the bot
+      _messages.add(ChatMessage(
+        id: uuid.v4(),
+        content: DisclaimerConfig.contextualWarningMessage,
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+      notifyListeners();
+      
+      // Small delay so the warning appears before the actual response
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
 
     _isLoading = true;
     notifyListeners();

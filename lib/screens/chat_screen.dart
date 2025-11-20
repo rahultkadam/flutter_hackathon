@@ -6,10 +6,13 @@ import '../widgets/typing_indicator.dart';
 import '../widgets/quick_suggestions.dart';
 import '../widgets/response_actions.dart';
 import '../widgets/chat_history_panel.dart';
+import '../widgets/disclaimer_icon.dart';
+import '../widgets/initial_disclaimer_dialog.dart';
 import '../services/text_to_speech_service.dart';
 import '../services/speech_to_text_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/disclaimer_helper.dart';
 import 'chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -33,6 +36,26 @@ class _ChatScreenState extends State<ChatScreen> {
     _speechToTextService = SpeechToTextService();
     _textToSpeechService = TextToSpeechService();
     _initializeSpeechToText();
+    _checkAndShowDisclaimer();
+  }
+
+  Future<void> _checkAndShowDisclaimer() async {
+    // Check if disclaimer has been shown before
+    final hasShown = await DisclaimerHelper.hasShownDisclaimer();
+    
+    if (!hasShown && mounted) {
+      // Show disclaimer after a short delay to ensure UI is ready
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        if (mounted) {
+          final accepted = await InitialDisclaimerDialog.show(context);
+          
+          // If user declined, navigate back
+          if (!accepted && mounted) {
+            Navigator.of(context).pop();
+          }
+        }
+      });
+    }
   }
 
   Future<void> _initializeSpeechToText() async {
@@ -446,6 +469,13 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           child: Row(
             children: [
+              // Disclaimer icon (low-opacity warning icon)
+              DisclaimerIcon(
+                useSnackbar: !isDesktop, // Use modal on desktop, snackbar on mobile
+                size: isDesktop ? 16 : 18,
+                opacity: 0.35,
+              ),
+              SizedBox(width: ResponsiveHelper.getSpacing(context, mobile: 4, desktop: 6)),
               Expanded(
                 child: TextField(
                   controller: _messageController,
