@@ -147,17 +147,18 @@ class _SwipeableCardState extends State<SwipeableCard>
                   vertical: isMobile ? 24 : 36, // Reduced vertical padding for mobile
                   horizontal: isMobile ? 20 : 32, // Reduced horizontal padding for mobile
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min, // Important: Use min to prevent overflow
-                  children: [
-                    Text(
-                      widget.statement.emoji,
-                      style: TextStyle(fontSize: isMobile ? 48 : 64), // Smaller emoji for mobile
-                    ),
-                    SizedBox(height: isMobile ? 20 : 32), // Reduced spacing for mobile
-                    Flexible( // Wrap text in Flexible to prevent overflow
-                      child: Text(
+                child: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min, // Important: Use min to prevent overflow
+                    children: [
+                      Text(
+                        widget.statement.emoji,
+                        style: TextStyle(fontSize: isMobile ? 48 : 64), // Smaller emoji for mobile
+                      ),
+                      SizedBox(height: isMobile ? 20 : 32), // Reduced spacing for mobile
+                      Text(
                         widget.statement.statement,
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -167,8 +168,7 @@ class _SwipeableCardState extends State<SwipeableCard>
                           color: Colors.black87,
                         ),
                       ),
-                    ),
-                    SizedBox(height: isMobile ? 32 : 48), // Reduced spacing for mobile
+                      SizedBox(height: isMobile ? 32 : 48), // Reduced spacing for mobile
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(25),
@@ -246,6 +246,7 @@ class _SwipeableCardState extends State<SwipeableCard>
                       ),
                     ),
                   ],
+                ),
                 ),
               ),
             ),

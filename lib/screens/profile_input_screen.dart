@@ -8,6 +8,7 @@ import '../providers/quiz_provider.dart';
 import '../providers/myth_fact_provider.dart';
 import '../providers/daily_fact_provider.dart';
 import '../widgets/theme_toggle.dart';
+import '../utils/responsive_helper.dart';
 import 'main_navigation_screen.dart';
 
 class ProfileInputScreen extends StatefulWidget {
@@ -31,6 +32,11 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final padding = ResponsiveHelper.getPadding(context, mobile: 16, desktop: 12);
+    final titleSize = ResponsiveHelper.getFontSize(context, mobile: 24, desktop: 20);
+    final subtitleSize = ResponsiveHelper.getFontSize(context, mobile: 14, desktop: 13);
+    final spacing = ResponsiveHelper.getSpacing(context, mobile: 16, desktop: 12);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Your Profile'),
@@ -40,147 +46,154 @@ class _ProfileInputScreenState extends State<ProfileInputScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              const Text(
-                '💰 Welcome to Money Buddy!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tell us about yourself to get personalized financial advice',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
-              // First Name
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'First Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your first name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Last Name
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Last Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your last name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Occupation
-              TextFormField(
-                controller: _occupationController,
-                decoration: const InputDecoration(
-                  labelText: 'Occupation',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.work),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your occupation';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Age
-              TextFormField(
-                controller: _ageController,
-                decoration: const InputDecoration(
-                  labelText: 'Age',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your age';
-                  }
-                  final age = int.tryParse(value);
-                  if (age == null || age < 18 || age > 100) {
-                    return 'Please enter a valid age (18-100)';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Gender
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                decoration: const InputDecoration(
-                  labelText: 'Gender',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.wc),
-                ),
-                items: _genderOptions.map((gender) {
-                  return DropdownMenuItem(value: gender, child: Text(gender));
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGender = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Income Range
-              DropdownButtonFormField<String>(
-                value: _selectedIncomeRange,
-                decoration: const InputDecoration(
-                  labelText: 'Annual Income Range',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.currency_rupee),
-                ),
-                items: _incomeRanges.map((range) {
-                  return DropdownMenuItem(value: range, child: Text(range));
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedIncomeRange = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // FIX #3: Revert to original simple button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.all(padding),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveHelper.getMaxContentWidth(context),
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Text(
+                    '💰 Welcome to Money Buddy!',
+                    style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
-                  child: const Text('Start Exploring', style: TextStyle(fontSize: 16)),
-                ),
+                  SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 8, desktop: 6)),
+                  Text(
+                    'Tell us about yourself to get personalized financial advice',
+                    style: TextStyle(fontSize: subtitleSize, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 24)),
+
+                  // First Name
+                  TextFormField(
+                    controller: _firstNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'First Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your first name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: spacing),
+
+                  // Last Name
+                  TextFormField(
+                    controller: _lastNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Last Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your last name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: spacing),
+
+                  // Occupation
+                  TextFormField(
+                    controller: _occupationController,
+                    decoration: const InputDecoration(
+                      labelText: 'Occupation',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.work),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your occupation';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: spacing),
+
+                  // Age
+                  TextFormField(
+                    controller: _ageController,
+                    decoration: const InputDecoration(
+                      labelText: 'Age',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_today),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your age';
+                      }
+                      final age = int.tryParse(value);
+                      if (age == null || age < 18 || age > 100) {
+                        return 'Please enter a valid age (18-100)';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: spacing),
+
+                  // Gender
+                  DropdownButtonFormField<String>(
+                    value: _selectedGender,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.wc),
+                    ),
+                    items: _genderOptions.map((gender) {
+                      return DropdownMenuItem(value: gender, child: Text(gender));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGender = value!;
+                      });
+                    },
+                  ),
+                  SizedBox(height: spacing),
+
+                  // Income Range
+                  DropdownButtonFormField<String>(
+                    value: _selectedIncomeRange,
+                    decoration: const InputDecoration(
+                      labelText: 'Annual Income Range',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.currency_rupee),
+                    ),
+                    items: _incomeRanges.map((range) {
+                      return DropdownMenuItem(value: range, child: Text(range));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedIncomeRange = value!;
+                      });
+                    },
+                  ),
+                  SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 24)),
+
+                  // FIX #3: Revert to original simple button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.getPadding(context, mobile: 16, desktop: 14)),
+                      ),
+                      child: Text('Start Exploring', style: TextStyle(fontSize: subtitleSize)),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/myth_fact_provider.dart';
 import '../widgets/swipeable_card.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive_helper.dart';
 
 class MythFactScreen extends StatefulWidget {
   const MythFactScreen({Key? key}) : super(key: key);
@@ -49,148 +50,288 @@ class _MythFactScreenState extends State<MythFactScreen> {
     final total = result.totalQuestions;
     final percentage = result.percentage;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 40),
-          const Text(
-            '🎉 Game Complete!',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Well done! Here are your results:',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
+    // Determine performance level
+    String performanceEmoji;
+    String performanceText;
+    Color performanceColor;
+    
+    if (percentage >= 80) {
+      performanceEmoji = '🏆';
+      performanceText = 'Excellent!';
+      performanceColor = AppColors.successGreen;
+    } else if (percentage >= 60) {
+      performanceEmoji = '🎯';
+      performanceText = 'Good Job!';
+      performanceColor = AppColors.primaryPurple;
+    } else if (percentage >= 40) {
+      performanceEmoji = '💪';
+      performanceText = 'Keep Trying!';
+      performanceColor = AppColors.warningOrange;
+    } else {
+      performanceEmoji = '📚';
+      performanceText = 'Keep Learning!';
+      performanceColor = AppColors.errorRed;
+    }
 
-          // Score Circle
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: percentage >= 70
-                  ? Colors.green
-                  : percentage >= 40
-                  ? Colors.orange
-                  : Colors.red,
-              border: Border.all(
-                color: percentage >= 70
-                    ? Colors.green!
-                    : percentage >= 40
-                    ? Colors.orange!
-                    : Colors.red!,
-                width: 8,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '$score/$total',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: percentage >= 70
-                        ? Colors.green
-                        : percentage >= 40
-                        ? Colors.orange
-                        : Colors.red,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$percentage%',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final emojiSize = ResponsiveHelper.getFontSize(context, mobile: 80, desktop: 56);
+    final titleSize = ResponsiveHelper.getFontSize(context, mobile: 32, desktop: 24);
+    final subtitleSize = ResponsiveHelper.getFontSize(context, mobile: 16, desktop: 13);
+    final circleSize = ResponsiveHelper.getIconSize(context, mobile: 220, desktop: 160);
+    final percentageSize = ResponsiveHelper.getFontSize(context, mobile: 56, desktop: 40);
+    final spacing = ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 20);
 
-          // Stats Card
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(maxWidth: ResponsiveHelper.getMaxContentWidth(context)),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(ResponsiveHelper.getPadding(context, mobile: 24, desktop: 16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 20, desktop: 12)),
+
+              // Score Card with circular progress indicator and left side content
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _resultRow('Correct Answers', '$score', Colors.green),
-                  const Divider(),
-                  _resultRow('Incorrect Answers', '${total - score}', Colors.red),
-                  const Divider(),
-                  _resultRow('Max Streak', '${result.currentStreak} 🔥', Colors.orange),
+                  // Left side: Emoji, Title, Subtitle
+                  Flexible(
+                    flex: 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          performanceEmoji,
+                          style: TextStyle(fontSize: emojiSize),
+                        ),
+                        SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+                        Text(
+                          performanceText,
+                          style: TextStyle(
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.bold,
+                            color: performanceColor,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 8, desktop: 6)),
+                        Text(
+                          'You got $score out of\n$total correct',
+                          style: TextStyle(
+                            fontSize: subtitleSize,
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: ResponsiveHelper.getSpacing(context, mobile: 24, desktop: 20)),
+                  // Right side: Circular progress indicator
+                  Container(
+                    width: circleSize,
+                    height: circleSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          performanceColor.withOpacity(0.1),
+                          performanceColor.withOpacity(0.05),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: performanceColor.withOpacity(0.3),
+                        width: isDesktop ? 2 : 3,
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Circular progress indicator
+                        SizedBox(
+                          width: circleSize - 20,
+                          height: circleSize - 20,
+                          child: CircularProgressIndicator(
+                            value: percentage / 100,
+                            strokeWidth: isDesktop ? 8 : 12,
+                            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.3),
+                            valueColor: AlwaysStoppedAnimation<Color>(performanceColor),
+                          ),
+                        ),
+                        // Score text in center
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$percentage%',
+                              style: TextStyle(
+                                fontSize: percentageSize,
+                                fontWeight: FontWeight.bold,
+                                color: performanceColor,
+                              ),
+                            ),
+                            SizedBox(height: isDesktop ? 2 : 4),
+                            Text(
+                              'Score',
+                              style: TextStyle(
+                                fontSize: subtitleSize,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 40),
+              SizedBox(height: spacing),
 
-          // Action Buttons
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                mythFactProvider.startGame();
-                setState(() {
-                  _showExplanation = false;
-                });
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Play Again', style: TextStyle(fontSize: 16)),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green,
+              // Stats Cards in Grid
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.check_circle,
+                      label: 'Correct',
+                      value: '$score',
+                      color: AppColors.successGreen,
+                      context: context,
+                      isDesktop: isDesktop,
+                    ),
+                  ),
+                  SizedBox(width: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.cancel,
+                      label: 'Wrong',
+                      value: '${total - score}',
+                      color: AppColors.errorRed,
+                      context: context,
+                      isDesktop: isDesktop,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                mythFactProvider.resetGame();
-              },
-              icon: const Icon(Icons.home),
-              label: const Text('Back to Home', style: TextStyle(fontSize: 16)),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.local_fire_department,
+                      label: 'Max Streak',
+                      value: '${result.currentStreak}',
+                      color: AppColors.warningOrange,
+                      context: context,
+                      isDesktop: isDesktop,
+                    ),
+                  ),
+                  SizedBox(width: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.emoji_events,
+                      label: 'Accuracy',
+                      value: '$percentage%',
+                      color: AppColors.primaryPurple,
+                      context: context,
+                      isDesktop: isDesktop,
+                    ),
+                  ),
+                ],
               ),
-            ),
+              SizedBox(height: spacing),
+
+              // Action Buttons
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    mythFactProvider.startGame();
+                    setState(() {
+                      _showExplanation = false;
+                    });
+                  },
+                  icon: Icon(Icons.refresh, size: isDesktop ? 18 : 24),
+                  label: Text('Play Again', style: TextStyle(fontSize: isDesktop ? 14 : 16)),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      vertical: isDesktop ? 12 : 16,
+                    ),
+                    backgroundColor: AppColors.primaryPurple,
+                  ),
+                ),
+              ),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    mythFactProvider.resetGame();
+                  },
+                  icon: Icon(Icons.home, size: isDesktop ? 18 : 24),
+                  label: Text('Back to Home', style: TextStyle(fontSize: isDesktop ? 14 : 16)),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      vertical: isDesktop ? 12 : 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _resultRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required BuildContext context,
+    required bool isDesktop,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(isDesktop ? 12 : 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? color.withOpacity(0.15)
+            : color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          Icon(
+            icon,
+            color: color,
+            size: isDesktop ? 24 : 32,
           ),
+          SizedBox(height: isDesktop ? 6 : 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: isDesktop ? 18 : 24,
               fontWeight: FontWeight.bold,
               color: color,
+            ),
+          ),
+          SizedBox(height: isDesktop ? 2 : 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isDesktop ? 10 : 12,
+              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
             ),
           ),
         ],
@@ -199,173 +340,187 @@ class _MythFactScreenState extends State<MythFactScreen> {
   }
 
   Widget _buildStartScreen(MythFactProvider mythFactProvider) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Column(
-              children: [
-                Text('🎲', style: TextStyle(fontSize: 64)),
-                SizedBox(height: 16),
-                Text(
-                  'Myth vs Fact',
-                  style: TextStyle(
-                    fontSize: 28, 
-                    fontWeight: FontWeight.bold, 
-                    color: Theme.of(context).textTheme.headlineMedium?.color
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Swipe right for FACT, left for MYTH',
-                  style: TextStyle(
-                    fontSize: 14, 
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final padding = ResponsiveHelper.getPadding(context, mobile: 20, desktop: 16);
+    final titleSize = ResponsiveHelper.getFontSize(context, mobile: 28, desktop: 24);
+    final subtitleSize = ResponsiveHelper.getFontSize(context, mobile: 14, desktop: 13);
+    final headerSize = ResponsiveHelper.getFontSize(context, mobile: 18, desktop: 16);
+    final spacing = ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 24);
 
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Your Stats',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(padding),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: ResponsiveHelper.getMaxContentWidth(context),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    Text('🎲', style: TextStyle(fontSize: isDesktop ? 56 : 64)),
+                    SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 16, desktop: 12)),
+                    Text(
+                      'Myth vs Fact',
+                      style: TextStyle(
+                        fontSize: titleSize, 
+                        fontWeight: FontWeight.bold, 
+                        color: Theme.of(context).textTheme.headlineMedium?.color
+                      ),
+                    ),
+                    SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 8, desktop: 6)),
+                    Text(
+                      'Swipe right for FACT, left for MYTH',
+                      style: TextStyle(
+                        fontSize: subtitleSize, 
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: spacing),
+
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: EdgeInsets.all(ResponsiveHelper.getPadding(context, mobile: 16, desktop: 14)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _statItem('🔥 Max Streak', '${mythFactProvider.maxStreak}', 'correct'),
-                      _statItem('🎮 Games', '${mythFactProvider.gameResults.length}', 'played'),
-                      _statItem(
-                        '🎯 Best',
-                        mythFactProvider.gameResults.isNotEmpty
-                            ? '${mythFactProvider.gameResults.reduce((a, b) => a.percentage > b.percentage ? a : b).percentage}%'
-                            : '0%',
-                        'score',
+                      Text(
+                        'Your Stats',
+                        style: TextStyle(fontSize: headerSize, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 16, desktop: 12)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _statItem('🔥 Max Streak', '${mythFactProvider.maxStreak}', 'correct'),
+                          _statItem('🎮 Games', '${mythFactProvider.gameResults.length}', 'played'),
+                          _statItem(
+                            '🎯 Best',
+                            mythFactProvider.gameResults.isNotEmpty
+                                ? '${mythFactProvider.gameResults.reduce((a, b) => a.percentage > b.percentage ? a : b).percentage}%'
+                                : '0%',
+                            'score',
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 32),
+              SizedBox(height: spacing),
 
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? AppColors.primaryPurple.withOpacity(0.1)
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.primaryPurple.withOpacity(0.3)
-                    : Colors.grey.shade300,
+              Container(
+                padding: EdgeInsets.all(ResponsiveHelper.getPadding(context, mobile: 16, desktop: 14)),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? AppColors.primaryPurple.withOpacity(0.1)
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.primaryPurple.withOpacity(0.3)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '📖 How to Play',
+                      style: TextStyle(
+                        fontSize: subtitleSize, 
+                        fontWeight: FontWeight.bold, 
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.primaryPurple
+                            : Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 12, desktop: 8)),
+                    Text(
+                      '• Swipe RIGHT if you think it\'s a FACT', 
+                      style: TextStyle(
+                        fontSize: subtitleSize,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '• Swipe LEFT if you think it\'s a MYTH', 
+                      style: TextStyle(
+                        fontSize: subtitleSize,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '• Learn the explanation after each card', 
+                      style: TextStyle(
+                        fontSize: subtitleSize,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '• Build your streak with correct answers', 
+                      style: TextStyle(
+                        fontSize: subtitleSize,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '📖 How to Play',
-                  style: TextStyle(
-                    fontSize: 14, 
-                    fontWeight: FontWeight.bold, 
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? AppColors.primaryPurple
-                        : Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  '• Swipe RIGHT if you think it\'s a FACT', 
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? AppColors.white
-                        : Colors.black87,
-                  ),
-                ),
-                Text(
-                  '• Swipe LEFT if you think it\'s a MYTH', 
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? AppColors.white
-                        : Colors.black87,
-                  ),
-                ),
-                Text(
-                  '• Learn the explanation after each card', 
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? AppColors.white
-                        : Colors.black87,
-                  ),
-                ),
-                Text(
-                  '• Build your streak with correct answers', 
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? AppColors.white
-                        : Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
+              SizedBox(height: spacing),
 
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: mythFactProvider.isLoading
-                  ? null
-                  : () {
-                mythFactProvider.startGame();
-                setState(() {
-                  _showExplanation = false;
-                });
-              },
-              icon: mythFactProvider.isLoading
-                  ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: mythFactProvider.isLoading
+                      ? null
+                      : () {
+                    mythFactProvider.startGame();
+                    setState(() {
+                      _showExplanation = false;
+                    });
+                  },
+                  icon: mythFactProvider.isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Icon(Icons.play_arrow),
+                  label: Text(
+                    mythFactProvider.isLoading
+                        ? 'Loading Myth vs Fact statements...'
+                        : 'Start Game',
+                    style: TextStyle(fontSize: subtitleSize),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.getPadding(context, mobile: 16, desktop: 14)),
+                    backgroundColor: Colors.green,
+                  ),
                 ),
-              )
-                  : const Icon(Icons.play_arrow),
-              label: Text(
-                mythFactProvider.isLoading
-                    ? 'Loading Myth vs Fact statements...'
-                    : 'Start Game',
-                style: const TextStyle(fontSize: 16),
               ),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green,
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -427,29 +582,50 @@ class _MythFactScreenState extends State<MythFactScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Container(
+              constraints: BoxConstraints(maxHeight: 120), // Limit height to prevent overflow
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.primaryPurple.withOpacity(0.2)
+                    : AppColors.primaryPurple.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primaryPurple.withOpacity(0.3),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'This is a ${currentStatement.isFact ? 'FACT ✓' : 'MYTH ✗'}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: currentStatement.isFact ? Colors.green : Colors.red,
-                      fontSize: 16,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          currentStatement.isFact ? Icons.check_circle : Icons.cancel,
+                          color: currentStatement.isFact ? AppColors.successGreen : AppColors.errorRed,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'This is a ${currentStatement.isFact ? 'FACT ✓' : 'MYTH ✗'}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: currentStatement.isFact ? AppColors.successGreen : AppColors.errorRed,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    currentStatement.explanation,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      currentStatement.explanation,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           )
@@ -477,12 +653,13 @@ class _MythFactScreenState extends State<MythFactScreen> {
   }
 
   Widget _statItem(String label, String value, String unit) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        Text(unit, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: isDesktop ? 11 : 12, color: Colors.grey)),
+        SizedBox(height: isDesktop ? 3 : 4),
+        Text(value, style: TextStyle(fontSize: isDesktop ? 20 : 22, fontWeight: FontWeight.bold)),
+        Text(unit, style: TextStyle(fontSize: isDesktop ? 10 : 11, color: Colors.grey)),
       ],
     );
   }

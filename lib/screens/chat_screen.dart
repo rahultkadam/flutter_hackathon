@@ -9,6 +9,7 @@ import '../widgets/chat_history_panel.dart';
 import '../services/text_to_speech_service.dart';
 import '../services/speech_to_text_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive_helper.dart';
 import 'chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -262,7 +263,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     ? _buildWelcomeMessage()
                     : ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveHelper.getPadding(context, mobile: 16, desktop: 40),
+                    vertical: ResponsiveHelper.getPadding(context, mobile: 16, desktop: 12),
+                  ),
                   itemCount: chatProvider.messages.length +
                       (chatProvider.isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
@@ -353,142 +357,163 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildWelcomeMessage() {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     return Center(
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '👋 Hi! I\'m Money Buddy',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Your Personal Financial Advisor',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Ask me about:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 16),
-            _buildWelcomeItem('💡 SIP and mutual funds'),
-            _buildWelcomeItem('📊 Investment strategies'),
-            _buildWelcomeItem('💰 Tax-saving options'),
-            _buildWelcomeItem('🏦 Banking products'),
-            _buildWelcomeItem('🎯 Personalized advice'),
-            const SizedBox(height: 32),
-            const Text(
-              'Use the button below to type or hold mic to speak! 👇',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(ResponsiveHelper.getPadding(context, mobile: 20, desktop: 16)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '👋 Hi! I\'m Money Buddy',
+                style: TextStyle(fontSize: ResponsiveHelper.getFontSize(context, mobile: 28, desktop: 24), fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 16, desktop: 12)),
+              Text(
+                'Your Personal Financial Advisor',
+                style: TextStyle(fontSize: ResponsiveHelper.getFontSize(context, mobile: 16, desktop: 14), color: Colors.grey),
+              ),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 24)),
+              Text(
+                'Ask me about:',
+                style: TextStyle(fontSize: ResponsiveHelper.getFontSize(context, mobile: 16, desktop: 14), fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 16, desktop: 12)),
+              _buildWelcomeItem('💡 SIP and mutual funds'),
+              _buildWelcomeItem('📊 Investment strategies'),
+              _buildWelcomeItem('💰 Tax-saving options'),
+              _buildWelcomeItem('🏦 Banking products'),
+              _buildWelcomeItem('🎯 Personalized advice'),
+              SizedBox(height: ResponsiveHelper.getSpacing(context, mobile: 32, desktop: 24)),
+              Text(
+                'Use the button below to type or hold mic to speak! 👇',
+                style: TextStyle(fontSize: isDesktop ? 12 : 13, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildWelcomeItem(String text) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14),
+        style: TextStyle(fontSize: isDesktop ? 13 : 14),
       ),
     );
   }
 
   // FIX #1: WhatsApp-style send/mic button with floating design
   Widget _buildInputArea(ChatProvider chatProvider) {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            offset: const Offset(0, 2),
-            blurRadius: 12,
-            spreadRadius: 1,
-            color: Colors.black.withOpacity(0.15),
-          ),
-        ],
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final horizontalPadding = ResponsiveHelper.getPadding(context, mobile: 12, desktop: 40);
+    
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveHelper.getMaxContentWidth(context),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: 'Ask me anything...',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 8,
-                ),
+        child: Container(
+          margin: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: ResponsiveHelper.getPadding(context, mobile: 12, desktop: 10),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveHelper.getPadding(context, mobile: 16, desktop: 14),
+            vertical: ResponsiveHelper.getPadding(context, mobile: 12, desktop: 10),
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                offset: const Offset(0, 2),
+                blurRadius: 12,
+                spreadRadius: 1,
+                color: Colors.black.withOpacity(0.15),
               ),
-              maxLines: null,
-              minLines: 1,
-              enabled: !chatProvider.isLoading,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _sendMessage(),
-              onChanged: (_) => setState(() {}), // Rebuild to show send/mic button
+            ],
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              width: 1,
             ),
           ),
-          const SizedBox(width: 8),
-          // Combined Send/Mic Button
-          ValueListenableBuilder(
-            valueListenable: _messageController,
-            builder: (context, value, child) {
-              final hasText = value.text.trim().isNotEmpty;
-
-              if (hasText) {
-                // Show send button
-                return FloatingActionButton(
-                  mini: true,
-                  onPressed: chatProvider.isLoading ? null : _sendMessage,
-                  backgroundColor: AppColors.primaryPurple,
-                  child: const Icon(Icons.send, size: 20, color: Colors.white),
-                );
-              } else {
-                // Show mic button (hold to speak)
-                return GestureDetector(
-                  onLongPressStart: (_) => _startListening(),
-                  onLongPressEnd: (_) => _stopListening(),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: _isMicActive ? Colors.red : Colors.blue,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: _isMicActive
-                              ? Colors.red.withOpacity(0.4)
-                              : Colors.blue.withOpacity(0.4),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      _isMicActive ? Icons.mic : Icons.mic_none,
-                      color: Colors.white,
-                      size: 24,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  decoration: const InputDecoration(
+                    hintText: 'Ask me anything...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
                     ),
                   ),
-                );
-              }
-            },
+                  maxLines: null,
+                  minLines: 1,
+                  enabled: !chatProvider.isLoading,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  onChanged: (_) => setState(() {}), // Rebuild to show send/mic button
+                ),
+              ),
+              SizedBox(width: ResponsiveHelper.getSpacing(context, mobile: 8, desktop: 10)),
+              // Combined Send/Mic Button
+              ValueListenableBuilder(
+                valueListenable: _messageController,
+                builder: (context, value, child) {
+                  final hasText = value.text.trim().isNotEmpty;
+
+                  if (hasText) {
+                    // Show send button
+                    return FloatingActionButton(
+                      mini: true,
+                      onPressed: chatProvider.isLoading ? null : _sendMessage,
+                      backgroundColor: AppColors.primaryPurple,
+                      child: Icon(Icons.send, size: isDesktop ? 18 : 20, color: Colors.white),
+                    );
+                  } else {
+                    // Show mic button (hold to speak)
+                    return GestureDetector(
+                      onLongPressStart: (_) => _startListening(),
+                      onLongPressEnd: (_) => _stopListening(),
+                      child: Container(
+                        width: isDesktop ? 44 : 48,
+                        height: isDesktop ? 44 : 48,
+                        decoration: BoxDecoration(
+                          color: _isMicActive ? Colors.red : Colors.blue,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _isMicActive
+                                  ? Colors.red.withOpacity(0.4)
+                                  : Colors.blue.withOpacity(0.4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _isMicActive ? Icons.mic : Icons.mic_none,
+                          color: Colors.white,
+                          size: isDesktop ? 20 : 24,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
